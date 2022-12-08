@@ -1,4 +1,4 @@
-	#include <String.h>
+	#include <string.h>
 	#include "Strategic Mines.h"
 	#include "Finances.h"
 	#include "Strategic Town Loyalty.h"

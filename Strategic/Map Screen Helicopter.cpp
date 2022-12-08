@@ -9,7 +9,7 @@
 	#include "Strategic Pathing.h"
 	#include "Random.h"
 	#include "Game Event Hook.h"
-	#include "String.h"
+	#include "string.h"
 	#include "Dialogue Control.h"
 	#include "Message.h"
 	#include "Strategic Movement.h"

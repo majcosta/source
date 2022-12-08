@@ -1,7 +1,7 @@
 	#include	"Types.h"
 	#include	"GameSettings.h"
 	#include	"FileMan.h"
-	#include	"String.h"
+	#include	"string.h"
 	#include	"Sound Control.h"
 	#include	"SaveLoadScreen.h"
 	#include	"Music Control.h"

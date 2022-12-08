@@ -1,5 +1,5 @@
 	#include "Vehicles.h"
-	#include "String.h"
+	#include "string.h"
 	#include "Strategic Pathing.h"
 	#include "Assignments.h"
 	#include "Strategic Movement.h"

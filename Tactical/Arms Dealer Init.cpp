@@ -1,7 +1,7 @@
 	#include "Types.h"
 	#include "stdlib.h"
 	#include "Arms Dealer Init.h"
-	#include "String.h"
+	#include "string.h"
 	#include "Debug.h"
 	#include "Random.h"
 	#include "Weapons.h"
