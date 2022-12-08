@@ -6,10 +6,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# lua51.lib and lua51.vc9.lib have been built with /MTx, so we must as well
-# TODO: build our own Lua 5.1.2 from source so we can use whichever
-set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP USE_VFS _CRT_SECURE_NO_DEPRECATE)
 include_directories(Ja2 "ext/VFS/include" Utils TileEngine TacticalAI "ModularizedTacticalAI/include" Tactical Strategic SGP "Ja2/Res" Lua Laptop Multiplayer Editor Console)
 
@@ -17,6 +13,7 @@ include_directories(Ja2 "ext/VFS/include" Utils TileEngine TacticalAI "Modulariz
 add_subdirectory("ext/libsmacker-1.1.1")
 add_subdirectory("ext/libpng")
 add_subdirectory("ext/zlib")
+add_subdirectory("ext/lua-5.1.2/src")
 add_subdirectory("ext/VFS")
 target_link_libraries(bfVFS PRIVATE 7z)
 
