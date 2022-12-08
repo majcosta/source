@@ -21,7 +21,7 @@
 
 #include "types.h"
 
-#include "Windows.h"
+#include "windows.h"
 
 #include "FileCat.h"
 

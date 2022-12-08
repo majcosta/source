@@ -2,7 +2,7 @@
 #define INIREADER_H
 #define NOMINMAX
 #include <algorithm>
-#include <Windows.h>
+#include <windows.h>
 #include <Types.h>
 #include <stack>
 #include <string>

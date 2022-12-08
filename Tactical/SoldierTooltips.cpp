@@ -1,5 +1,5 @@
 #include "Types.h"
-#include "Windows.h"
+#include "windows.h"
 //#include "Soldier Control.h"
 #include "Input.h"
 #include "english.h"

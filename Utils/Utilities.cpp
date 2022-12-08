@@ -1,6 +1,6 @@
 	#include "types.h"
 	#include <stdio.h>
-	#include <Windows.h>
+	#include <windows.h>
 	#include "sgp.h"
 	#include "time.h"
 	#include "vobject.h"
