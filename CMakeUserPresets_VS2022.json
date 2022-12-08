@@ -1,0 +1,38 @@
+{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "Ninja VS2022",
+      "inherits": "Ninja",
+      "cacheVariables": {
+        // To build other executables and/or languages, edit "Languages" and
+        // "Applications" according to your needs.
+        // Rules: Options must be separated by ';' and if ALL is present in
+        // a list, all valid choices for that list will be configured.
+        "Languages": "CHINESE;DUTCH;ENGLISH;FRENCH;GERMAN;ITALIAN;POLISH;RUSSIAN;ALL",
+        "Applications": "JA2;JA2MAPEDITOR;JA2UB;JA2UBMAPEDITOR;ALL"
+      },
+      "vendor": { "microsoft.com/VisualStudioSettings/CMake/1.0": { "hostOS": "Windows" } }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "Ninja VS2022",
+      "verbose": false
+    },
+    {
+      "name": "Release",
+      "configuration": "Release",
+      "configurePreset": "Ninja VS2022",
+      "verbose": false
+    },
+    {
+      "name": "Debug",
+      "configuration": "Debug",
+      "configurePreset": "Ninja VS2022",
+      "verbose": false
+    }
+  ]
+}

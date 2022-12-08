@@ -56,6 +56,22 @@ Visit the [releases page](https://github.com/1dot13/source/releases) to download
    (those issues can occur due to the combination of old game and modern OS/hardware, cnc-ddraw helps to avoid those) 
 
 
+### Compiling
+
+1. Clone the repository
+   1. Open Visual Studio 2022
+   2. Click *Clone a repository*
+   3. Copy & paste `https://github.com/1dot13/source.git` into *Repository location*
+   4. Click *Clone*
+3. Building
+   1. Press `F7` to build an English Ja2 1.13 Release executable
+4. (Optional) Configuring languages and other applications
+   1. Copy the `CMakeUserPresets_VS2022.json` template file into `CMakeUserPresets.json`
+   2. Edit the file and follow the instructions in the comments. Don't forget to save
+   3. Click the `Configurations` drop-down and choose `Ninja VS2022` instead of `Ninja`
+   4. Press `F7` to build all or switch from Solution Explorer to CMake Targets View to build specific executables.
+
+
 ### Reports
 
 For more information and reports, visit [Bug reports at Bear's Pit Forum](http://thepit.ja-galaxy-forum.com/index.php?t=thread&frm_id=216&) or join the [Bear's Pit Discord](https://discord.gg/GqrVZUM "Bear's Pit Discord")

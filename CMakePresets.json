@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "Ninja",
+      "generator": "Ninja Multi-Config",
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Default RelWithDebInfo",
+      "configuration": "RelWithDebInfo",
+      "configurePreset": "Ninja"
+    }
+  ]
+}

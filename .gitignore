@@ -1,4 +1,12 @@
+CMakeUserPresets.json
+
+# JetBrains
+.idea/
+
+# Visual Studio 2022
+.vs/
+CMakeSettings.json
+out/
 build/
 lib/
-.vs/
-.idea/
+bin/
