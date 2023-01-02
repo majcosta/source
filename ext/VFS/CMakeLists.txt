@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
+cmake_policy(SET CMP0069 NEW)
+
 project(bfVFS)
 
 set(BFVFS_VERSION_MAJOR 1)

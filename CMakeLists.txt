@@ -9,6 +9,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP USE_VFS _CRT_SECURE_NO_DEPRECATE)
 include_directories(Ja2 "ext/VFS/include" Utils TileEngine TacticalAI "ModularizedTacticalAI/include" Tactical Strategic SGP "Ja2/Res" Lua Laptop Multiplayer Editor Console)
 
+include(CheckIPOSupported)
+check_ipo_supported(RESULT IPOsupport OUTPUT output LANGUAGES C CXX)
+if(IPOsupport)
+	set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+else()
+	message(WARNING "IPO is not supported: ${output}")
+endif()
+
 # external libraries
 add_subdirectory("ext/libsmacker-1.1.1")
 add_subdirectory("ext/libpng")
