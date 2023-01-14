@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP USE_VFS _CRT_SECURE_NO_DEPRECATE)
-include_directories(${CMAKE_SOURCE_DIR} "ext/VFS/include" Utils TileEngine TacticalAI ModularizedTacticalAI Tactical Strategic SGP Res Lua Laptop Multiplayer "Multiplayer/raknet" Editor Console)
+include_directories(${CMAKE_SOURCE_DIR} "ext/VFS/include" Utils TileEngine TacticalAI ModularizedTacticalAI Tactical Strategic SGP Res Lua Laptop Multiplayer Editor Console)
 
 # external libraries
 add_subdirectory("ext/libpng")
@@ -21,6 +21,7 @@ target_link_libraries(bfVFS PRIVATE 7z)
 
 # internal libraries that are Good
 add_subdirectory(Lua)
+add_subdirectory(Multiplayer)
 
 # internal libraries that live in Preprocessor Hell, because they are Bad
 set(Ja2_Libs
@@ -66,9 +67,6 @@ set(Ja2Src
 "MPJoinScreen.cpp"
 "MPScoreScreen.cpp"
 "MPXmlTeams.cpp"
-"Multiplayer/client.cpp"
-"Multiplayer/server.cpp"
-"Multiplayer/transfer_rules.cpp"
 "Options Screen.cpp"
 "profiler.cpp"
 "SaveLoadGame.cpp"
@@ -92,8 +90,8 @@ Lua
 "${PROJECT_SOURCE_DIR}/SMACKW32.LIB"
 "${PROJECT_SOURCE_DIR}/binkw32.lib"
 bfVFS
-"${PROJECT_SOURCE_DIR}/Multiplayer/raknet/RakNetLibStatic.lib"
 "ws2_32.lib"
+Multiplayer
 )
 
 include(cmake/ValidateOptions.cmake)
