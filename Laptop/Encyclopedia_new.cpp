@@ -36,7 +36,7 @@
 	#include "laptop.h"//UI dimensions, mouse regions
 	#include "Utilities.h"//file names
 	#include "vobject.h"//video objects
-	#include "Utils/Cursors.h"
+	#include "Cursors.h"
 	#include "Text.h"//button text
 #ifdef ENC_USE_BUTTONSYSTEM
 	#include "Button System.h"

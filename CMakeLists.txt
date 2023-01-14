@@ -11,7 +11,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP USE_VFS _CRT_SECURE_NO_DEPRECATE)
-include_directories(${CMAKE_SOURCE_DIR} Ja2 "ext/VFS/include" Utils TileEngine TacticalAI ModularizedTacticalAI Tactical Strategic SGP "Ja2/Res" Lua Laptop Multiplayer Editor Console)
+include_directories(Ja2 "ext/VFS/include" Utils TileEngine TacticalAI "ModularizedTacticalAI/include" Tactical Strategic SGP "Ja2/Res" Lua Laptop Multiplayer Editor Console)
 
 # external libraries
 add_subdirectory("ext/libpng")
