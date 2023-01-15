@@ -21,7 +21,7 @@ struct SMKFLIC
 //		UINT8						*pCueData;
 };
 
-void			SmkInitialize(HWND hWindow, UINT32 uiWidth, UINT32 uiHeight);
+void SmkInitialize(HWND hWindow);
 void			SmkShutdown(void);
 SMKFLIC			*SmkPlayFlic(const CHAR8 *cFilename, UINT32 uiLeft, UINT32 uiTop, BOOLEAN fAutoClose);
 BOOLEAN			SmkPollFlics(void);

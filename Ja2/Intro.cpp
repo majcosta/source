@@ -60,7 +60,7 @@ public:
 	{
 		if(_type & VT_SMK)
 		{
-			SmkInitialize( ghWindow, SCREEN_WIDTH, SCREEN_HEIGHT);
+            SmkInitialize(ghWindow);
 		}
 		if(_type & VT_BINK)
 		{
