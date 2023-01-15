@@ -14,6 +14,7 @@ add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7
 include_directories(Ja2 "ext/VFS/include" Utils TileEngine TacticalAI "ModularizedTacticalAI/include" Tactical Strategic SGP "Ja2/Res" Lua Laptop Multiplayer Editor Console)
 
 # external libraries
+add_subdirectory("ext/libsmacker-1.1.1")
 add_subdirectory("ext/libpng")
 add_subdirectory("ext/zlib")
 add_subdirectory("ext/VFS")
