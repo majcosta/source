@@ -165,7 +165,7 @@ foreach(lang IN LISTS LangTargets)
 		endforeach()
 
 		# for SGP only
-		target_link_libraries(${Executable}_SGP PRIVATE "ddraw.lib" "${PROJECT_SOURCE_DIR}/fmodvc.lib")
+		target_link_libraries(${Executable}_SGP PRIVATE "${PROJECT_SOURCE_DIR}/Standard Gaming Platform/ddraw.lib" "${PROJECT_SOURCE_DIR}/fmodvc.lib")
 		target_link_libraries(${Executable}_SGP PUBLIC libpng)
 		target_compile_definitions(${Executable}_SGP PRIVATE NO_ZLIB_COMPRESSION)
 	endforeach()
