@@ -65,13 +65,13 @@ bool XMLWriter::writeToFile(vfs::Path const& sFileName)
 		vfs::CFile file(sFileName);
 		if(file.openWrite(true,true))
 		{
-			return writeToFile(vfs::tWritableFile::cast(&file));
+			return writeToFile(vfs::WritableFile_t::cast(&file));
 		}
 	}
 	return false;
 }
 
-bool XMLWriter::writeToFile(vfs::tWritableFile* pFile)
+bool XMLWriter::writeToFile(vfs::WritableFile_t* pFile)
 {
 	try
 	{

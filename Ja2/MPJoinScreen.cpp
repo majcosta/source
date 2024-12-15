@@ -213,7 +213,7 @@ void MpIniExists()
 	if(!getVFS()->fileExists(JA2MP_INI_FILENAME))
 	{
 		SGP_THROW_IFFALSE(getVFS()->createNewFile(JA2MP_INI_FILENAME),L"could not create file : Ja2_mp.ini");
-		vfs::tWritableFile* file = getVFS()->getWriteFile(JA2MP_INI_FILENAME);
+		vfs::WritableFile_t* file = getVFS()->getWriteFile(JA2MP_INI_FILENAME);
 		if(file)
 		{
 			file->openWrite(true);

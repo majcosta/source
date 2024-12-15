@@ -853,7 +853,7 @@ void AddFilesToSendList()
 		if(transferRules.applyRule(valid_path()) == CTransferRules::ACCEPT)
 		{
 			// transfer only those files that are not on the ignore list
-			vfs::tReadableFile* rfile = vfs::tReadableFile::cast(it.value());
+			vfs::ReadableFile_t* rfile = vfs::ReadableFile_t::cast(it.value());
 			if(!rfile)
 			{
 				continue;

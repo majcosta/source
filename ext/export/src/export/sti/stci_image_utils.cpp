@@ -244,7 +244,7 @@ bool ja2xp::CIndexedSTIImage::AddImage(UINT8 *data, UINT32 data_size, UINT32 ima
 	return true;
 }
 
-bool ja2xp::CIndexedSTIImage::WriteImage(vfs::tWritableFile* pFile)
+bool ja2xp::CIndexedSTIImage::WriteImage(vfs::WritableFile_t* pFile)
 {
 	if(!pFile || !pFile->openWrite())
 	{

@@ -21,7 +21,7 @@ namespace ja2xp
 
 		bool AddCompressedImage(UINT8 *data, UINT32 data_size, UINT32 image_width, UINT32 image_height, INT32 image_offset_x, INT32 image_offset_y);
 
-		bool WriteImage(vfs::tWritableFile* pFile);
+		bool WriteImage(vfs::WritableFile_t* pFile);
 		bool WriteToHIMAGE(HIMAGE pImage);
 	private:
 		STCIHeader _header;

@@ -19,9 +19,9 @@ namespace ja2xp
 		virtual void printHelp();
 	};
 
-	bool convertSTItoJPC(vfs::tReadableFile *pFile, vfs::tWritableFile *pOutFile, bool bOffsets, bool rgba);
-	bool convertSTItoJPC(vfs::tReadableFile *pFile, vfs::Path const base_out_path, bool bOffsets, bool rgba);
-	bool convertSTItoPNG(vfs::tReadableFile *pFile, vfs::tWritableFile *pOutFile, bool rgba);
+	bool convertSTItoJPC(vfs::ReadableFile_t *pFile, vfs::WritableFile_t *pOutFile, bool bOffsets, bool rgba);
+	bool convertSTItoJPC(vfs::ReadableFile_t *pFile, vfs::Path const base_out_path, bool bOffsets, bool rgba);
+	bool convertSTItoPNG(vfs::ReadableFile_t *pFile, vfs::WritableFile_t *pOutFile, bool rgba);
 
 	bool convertSTItoJPC(vfs::Path const& sSrc, vfs::Path const& sDst,
 			bool bPacked=true, bool bOffsets=false, bool bOnePng=false, bool rgba=false);

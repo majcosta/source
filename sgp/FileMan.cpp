@@ -313,7 +313,7 @@ HWFILE FileOpen( STR strFilename, UINT32 uiOptions, BOOLEAN fDeleteOnClose, STR 
 		{
 			if(strProfilename && strProfilename[0])
 			{
-				vfs::COpenReadFile open_r(vfs::tReadableFile::cast(getVFS()->getFile(path, strProfilename)));
+				vfs::COpenReadFile open_r(vfs::ReadableFile_t::cast(getVFS()->getFile(path, strProfilename)));
 				pFile = &open_r.file();
 				open_r.release();
 			}
@@ -420,7 +420,7 @@ BOOLEAN FileRead( HWFILE hFile, PTR pDest, UINT32 uiBytesToRead, UINT32 *puiByte
 	vfs::IBaseFile *pFile = (vfs::IBaseFile*)hFile;
 	if(pFile && (s_mapFiles[pFile].op == SOperation::READ))
 	{
-		vfs::tReadableFile *pRF = vfs::tReadableFile::cast(pFile);
+		vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast(pFile);
 		if(pRF)
 		{
 			UINT32 uiBytesRead = 0;
@@ -453,7 +453,7 @@ BOOLEAN FileReadLine( HWFILE hFile, std::string* pDest )
 	vfs::IBaseFile *pFile = (vfs::IBaseFile*)hFile;
 	if ( pFile && FileCheckEndOfFile( hFile ) == FALSE && (s_mapFiles[pFile].op == SOperation::READ) )
 	{
-		vfs::tReadableFile *pRF = vfs::tReadableFile::cast( pFile );
+		vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast( pFile );
 		if ( pRF && pDest )
 		{
 			vfs::CReadLine rl( *pRF, false );
@@ -501,7 +501,7 @@ BOOLEAN FileWrite( HWFILE hFile, PTR pDest, UINT32 uiBytesToWrite, UINT32 *puiBy
 	vfs::IBaseFile *pFile = (vfs::IBaseFile*)hFile;
 	if(pFile && (s_mapFiles[pFile].op == SOperation::WRITE))
 	{
-		vfs::tWritableFile *pWF = vfs::tWritableFile::cast(pFile);
+		vfs::WritableFile_t *pWF = vfs::WritableFile_t::cast(pFile);
 		if(pWF)
 		{
 			UINT32 uiBytesWritten;
@@ -552,7 +552,7 @@ BOOLEAN FileWrite( HWFILE hFile, PTR pDest, UINT32 uiBytesToWrite, UINT32 *puiBy
 
 BOOLEAN FileLoad( STR strFilename, PTR pDest, UINT32 uiBytesToRead, UINT32 *puiBytesRead )
 {
-	vfs::tReadableFile *pFile = getVFS()->getReadFile(vfs::Path(strFilename));
+	vfs::ReadableFile_t *pFile = getVFS()->getReadFile(vfs::Path(strFilename));
 	vfs::COpenReadFile rfile(pFile);
 	if(pFile)
 	{
@@ -668,7 +668,7 @@ BOOLEAN FileSeek( HWFILE hFile, UINT32 uiDistance, UINT8 uiHow )
 
 		if(s_mapFiles[pFile].op == SOperation::WRITE)
 		{
-			vfs::tWritableFile *pWF = vfs::tWritableFile::cast(pFile);
+			vfs::WritableFile_t *pWF = vfs::WritableFile_t::cast(pFile);
 			if(pWF)
 			{
 				SGP_TRYCATCH_RETHROW(pWF->setWritePosition(iDistance, eSD), L"");
@@ -677,7 +677,7 @@ BOOLEAN FileSeek( HWFILE hFile, UINT32 uiDistance, UINT8 uiHow )
 		}
 		else if(s_mapFiles[pFile].op == SOperation::READ)
 		{
-			vfs::tReadableFile *pRF = vfs::tReadableFile::cast(pFile);
+			vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast(pFile);
 			if(pRF)
 			{
 				SGP_TRYCATCH_RETHROW(pRF->setReadPosition(iDistance, eSD), L"");
@@ -720,7 +720,7 @@ INT32 FileGetPos( HWFILE hFile )
 	vfs::IBaseFile *pFile = (vfs::IBaseFile*)hFile;
 	if(pFile && (s_mapFiles[pFile].op == SOperation::WRITE))
 	{
-		vfs::tWritableFile *pWF = vfs::tWritableFile::cast(pFile);
+		vfs::WritableFile_t *pWF = vfs::WritableFile_t::cast(pFile);
 		if(pWF)
 		{
 			return pWF->getWritePosition();
@@ -728,7 +728,7 @@ INT32 FileGetPos( HWFILE hFile )
 	}
 	else if(pFile && (s_mapFiles[pFile].op == SOperation::READ))
 	{
-		vfs::tReadableFile *pRF = vfs::tReadableFile::cast(pFile);
+		vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast(pFile);
 		if(pRF)
 		{
 			return pRF->getReadPosition();
@@ -897,7 +897,7 @@ BOOLEAN	FileCheckEndOfFile( HWFILE hFile )
 
 	if(pFile && (s_mapFiles[pFile].op == SOperation::WRITE))
 	{
-		vfs::tWritableFile *pWF = vfs::tWritableFile::cast(pFile);
+		vfs::WritableFile_t *pWF = vfs::WritableFile_t::cast(pFile);
 		if(pWF)
 		{
 			current_position = pWF->getWritePosition();
@@ -907,7 +907,7 @@ BOOLEAN	FileCheckEndOfFile( HWFILE hFile )
 	}
 	else if(pFile && (s_mapFiles[pFile].op == SOperation::READ))
 	{
-		vfs::tReadableFile *pRF = vfs::tReadableFile::cast(pFile);
+		vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast(pFile);
 		if(pRF)
 		{
 			current_position = pRF->getReadPosition();

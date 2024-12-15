@@ -7,9 +7,9 @@
 #include <sgp_auto_memory.h>
 #include <Structure Internals.h>
 
-bool ja2xp::ConvertStructure(vfs::tReadableFile* pStructureFile, vfs::tWritableFile* pOutputFile)
+bool ja2xp::ConvertStructure(vfs::ReadableFile_t* pStructureFile, vfs::WritableFile_t* pOutputFile)
 {
-	vfs::tReadableFile *pFile = pStructureFile;
+	vfs::ReadableFile_t *pFile = pStructureFile;
 	if(!pFile)
 	{
 		return false;

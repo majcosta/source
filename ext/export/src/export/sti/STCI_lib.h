@@ -5,7 +5,7 @@
 
 namespace ja2xp
 {
-	BOOLEAN LoadSTCIFileToImage(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fContents );
+	BOOLEAN LoadSTCIFileToImage(vfs::ReadableFile_t *pFile, HIMAGE hImage, UINT16 fContents );
 
-	BOOLEAN IsSTCIETRLEFile(vfs::tReadableFile *pFile, CHAR8 * ImageFile );
+	BOOLEAN IsSTCIETRLEFile(vfs::ReadableFile_t *pFile, CHAR8 * ImageFile );
 };

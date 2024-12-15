@@ -66,14 +66,14 @@ bool vfs::PropertyContainer::writeToXMLFile(vfs::Path const& sFileName, vfs::Pro
 
 	xmlw.openNode(tagmap.container());
 
-	tSections::iterator sit = m_mapProps.begin();
+	Sections_t::iterator sit = m_mapProps.begin();
 	for(; sit != m_mapProps.end(); ++sit)
 	{
 		xmlw.addAttributeToNextValue(tagmap.sectionID(),sit->first.utf8());
 		xmlw.openNode(tagmap.section());
 
 		vfs::PropertyContainer::Section& section = sit->second;
-		vfs::PropertyContainer::Section::tProps::iterator kit = section.mapProps.begin();
+		vfs::PropertyContainer::Section::Props_t::iterator kit = section.mapProps.begin();
 		for(; kit != section.mapProps.end(); ++kit)
 		{
 			xmlw.addAttributeToNextValue(tagmap.keyID(), kit->first.utf8());
@@ -172,7 +172,7 @@ void CPropertyXMLParser::onTextElement(const XML_Char *str, int len)
 
 bool vfs::PropertyContainer::initFromXMLFile(vfs::Path const& sFileName, vfs::PropertyContainer::TagMap& tagmap)
 {
-	vfs::tReadableFile *file = NULL;
+	vfs::ReadableFile_t *file = NULL;
 	bool delete_file = false;
 	if(getVFS()->fileExists(sFileName))
 	{
@@ -184,7 +184,7 @@ bool vfs::PropertyContainer::initFromXMLFile(vfs::Path const& sFileName, vfs::Pr
 	{
 		vfs::CFile* rfile = new vfs::CFile(sFileName);
 		delete_file = true;
-		file = vfs::tReadableFile::cast(rfile);
+		file = vfs::ReadableFile_t::cast(rfile);
 		if(!file->openRead())
 		{
 			delete file;

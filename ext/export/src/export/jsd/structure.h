@@ -5,7 +5,7 @@
 
 namespace ja2xp
 {
-	bool ConvertStructure(vfs::tReadableFile* pStructureFile, vfs::tWritableFile* pOutputFile);
+	bool ConvertStructure(vfs::ReadableFile_t* pStructureFile, vfs::WritableFile_t* pOutputFile);
 };
 
 #endif // _STRUCTURE_H_

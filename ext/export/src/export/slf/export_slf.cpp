@@ -13,7 +13,7 @@
 
 #include <iostream>
 
-bool ja2xp::convertSLFto7z(vfs::tReadableFile* pInFile, vfs::tWritableFile *pOutFile, bool bConvertSTIs, bool bPngOffsets)
+bool ja2xp::convertSLFto7z(vfs::ReadableFile_t* pInFile, vfs::WritableFile_t *pOutFile, bool bConvertSTIs, bool bPngOffsets)
 {
 	vfs::CSLFLibrary src_lib(pInFile,"");
 	if(!src_lib.init())
@@ -37,7 +37,7 @@ bool ja2xp::convertSLFto7z(vfs::tReadableFile* pInFile, vfs::tWritableFile *pOut
 	{
 		count++;
 		vfs::CBufferFile* temp_file = NULL;
-		vfs::tReadableFile *file = vfs::tReadableFile::cast(it.value());
+		vfs::ReadableFile_t *file = vfs::ReadableFile_t::cast(it.value());
 		if(bConvertSTIs)
 		{
 			vfs::Path filename = it.value()->getPath();
@@ -45,9 +45,9 @@ bool ja2xp::convertSLFto7z(vfs::tReadableFile* pInFile, vfs::tWritableFile *pOut
 			{
 				vfs::Path path = filename().substr(0,filename.length()-4) + L".jpc.7z";
 				temp_file = new vfs::CBufferFile(path);
-				if(convertSTItoJPC(vfs::tReadableFile::cast(it.value()), vfs::tWritableFile::cast(temp_file), bPngOffsets, false))
+				if(convertSTItoJPC(vfs::ReadableFile_t::cast(it.value()), vfs::WritableFile_t::cast(temp_file), bPngOffsets, false))
 				{
-					file = vfs::tReadableFile::cast( temp_file );
+					file = vfs::ReadableFile_t::cast( temp_file );
 				}
 			}
 		}

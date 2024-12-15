@@ -34,7 +34,7 @@ void InitEngineTilesets( )
 		{
 			SGP_TRYCATCH_RETHROW( ExportTilesets(tileset_filename), L"Could not export tileset XML file");
 		}
-		vfs::tReadableFile* file = getVFS()->getReadFile(tileset_filename);
+		vfs::ReadableFile_t* file = getVFS()->getReadFile(tileset_filename);
 		SGP_THROW_IFFALSE(file, 
 			_BS(L"File '") << tileset_filename << L"' does not exist and could not be created" << _BS::wget);
 

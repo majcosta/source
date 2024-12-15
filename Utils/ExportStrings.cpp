@@ -533,7 +533,7 @@ void Loc::ExportMercBio()
 	vfs::String::char_t pInfoString[SIZE_MERC_BIO_INFO];
 	vfs::String::char_t pAddInfo[SIZE_MERC_ADDITIONAL_INFO];
 	vfs::COpenReadFile rfile("BINARYDATA\\aimbios.edt");
-	vfs::tReadableFile& file = rfile.file();
+	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<40; ++i)
@@ -560,7 +560,7 @@ void Loc::ExportAIMHistory()
 	#define AIM_HISTORY_LINE_SIZE 400 * 2
 	vfs::String::char_t pHistLine[AIM_HISTORY_LINE_SIZE];
 	vfs::COpenReadFile rfile("BINARYDATA\\AimHist.edt");
-	vfs::tReadableFile& file = rfile.file();
+	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<23; ++i)
@@ -582,7 +582,7 @@ void Loc::ExportAIMPolicy()
 	#define AIM_HISTORY_LINE_SIZE 400 * 2
 	vfs::String::char_t pPolLine[AIM_HISTORY_LINE_SIZE];
 	vfs::COpenReadFile rfile("BINARYDATA\\AimPol.edt");
-	vfs::tReadableFile& file = rfile.file();
+	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<46; ++i)
@@ -603,7 +603,7 @@ void Loc::ExportAlumniName()
 	#define AIM_ALUMNI_NAME_SIZE 80 * 2
 	vfs::String::char_t pAlumniName[AIM_ALUMNI_NAME_SIZE];
 	vfs::COpenReadFile rfile("BINARYDATA\\AlumName.edt");
-	vfs::tReadableFile& file = rfile.file();
+	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<51; ++i)
@@ -631,7 +631,7 @@ void Loc::ExportDialogues()
 	{
 		vfs::PropertyContainer props;
 		vfs::COpenReadFile rfile(it.value());
-		vfs::tReadableFile& file = rfile.file();
+		vfs::ReadableFile_t& file = rfile.file();
 
 		std::wstringstream wss;
 		wss.str(file.getName().c_str());
@@ -670,7 +670,7 @@ void Loc::ExportNPCDialogues()
 	{
 		vfs::PropertyContainer props;
 		vfs::COpenReadFile rfile(it.value());
-		vfs::tReadableFile& file = rfile.file();
+		vfs::ReadableFile_t& file = rfile.file();
 
 		vfs::String::str_t const& ws = file.getName().c_wcs();
 		vfs::String::str_t::size_type pos = ws.find_first_of(L".");

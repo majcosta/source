@@ -175,7 +175,7 @@ namespace xml_auto
 			}
 		}
 
-		void parseFile(vfs::tReadableFile* pFile)
+		void parseFile(vfs::ReadableFile_t* pFile)
 		{
 			if(!pFile)
 			{
@@ -195,7 +195,7 @@ namespace xml_auto
 
 		void parseFile(vfs::Path const& sFile)
 		{
-			vfs::tReadableFile* file = getVFS()->getReadFile(sFile);
+			vfs::ReadableFile_t* file = getVFS()->getReadFile(sFile);
 			SGP_THROW_IFFALSE(file, _BS(L"Could not find file : ") << sFile << _BS::wget);
 
 			SGP_TRYCATCH_RETHROW( this->parseFile(file),
