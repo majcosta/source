@@ -215,7 +215,7 @@ bool vfs::PropertyContainer::initFromXMLFile(vfs::Path const& sFileName, vfs::Pr
 	{
 		std::wstringstream wss;
 		wss << L"XML Parser Error in Groups.xml: "
-			<< vfs::String::as_utf16(XML_ErrorString(XML_GetErrorCode(parser))) 
+			<< vfs::String::as_utfW(XML_ErrorString(XML_GetErrorCode(parser))) 
 			<< L" at line "
 			<< XML_GetCurrentLineNumber(parser);
 		SGP_THROW(wss.str().c_str());

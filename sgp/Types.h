@@ -155,7 +155,7 @@ inline void convert_string(std::string const& str_in, std::wstring &str_out)
 {
 	if(vfs::Settings::getUseUnicode())
 	{
-		vfs::String::as_utf16(str_in, str_out);
+		vfs::String::as_utfW(str_in, str_out);
 	}
 	else
 	{

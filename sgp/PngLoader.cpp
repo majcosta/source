@@ -195,7 +195,7 @@ static inline void setFlag(UINT8 &flags, char const* sFlag)
 	else
 	{
 		std::wstringstream wss;
-		wss << L"Unknown flag [" << vfs::String::as_utf16(sFlag) << L"]";
+		wss << L"Unknown flag [" << vfs::String::as_utfW(sFlag) << L"]";
 		SGP_THROW(wss.str().c_str());
 	}
 }

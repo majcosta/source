@@ -70,8 +70,8 @@ bool LuaState::CallFunction(const char* function_name)
 			{
 				std::string err = lua_tostring(_L, -1);
 				std::wstringstream wss;
-				wss << L"Execution of lua function '" << vfs::String::as_utf16(function_name) << L"' failed : ";
-				wss << vfs::String::as_utf16(err);
+				wss << L"Execution of lua function '" << vfs::String::as_utfW(function_name) << L"' failed : ";
+				wss << vfs::String::as_utfW(err);
 				SGP_THROW(wss.str().c_str());
 			}
 			return true;

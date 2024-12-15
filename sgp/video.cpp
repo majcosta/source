@@ -3125,7 +3125,7 @@ void FatalError( const STR8 pError, ...)
 	gfProgramIsRunning = FALSE;
 
 	//MessageBox( ghWindow, gFatalErrorString, "JA2 Fatal Error", MB_OK | MB_TASKMODAL );
-	MessageBoxW( ghWindow, vfs::String::as_utf16(gFatalErrorString).c_str(), L"JA2 Fatal Error", MB_OK | MB_TASKMODAL );
+	MessageBoxW( ghWindow, vfs::String::as_utfW(gFatalErrorString).c_str(), L"JA2 Fatal Error", MB_OK | MB_TASKMODAL );
 }
 
 
