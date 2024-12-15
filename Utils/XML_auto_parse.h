@@ -168,7 +168,7 @@ namespace xml_auto
 			{
 				std::wstringstream wss;
 				wss << L"XML Parser Error : "
-					<< vfs::String::as_utf16(XML_ErrorString(XML_GetErrorCode(_parser)))
+					<< vfs::String::as_utfW(XML_ErrorString(XML_GetErrorCode(_parser)))
 					<< L" in line "
 					<< XML_GetCurrentLineNumber(_parser);
 				SGP_THROW(wss.str().c_str());
