@@ -61,10 +61,10 @@ bool XMLWriter::writeToFile(vfs::Path const& sFileName)
 	catch(vfs::Exception& ex)
 	{
 		SGP_ERROR(ex.what());
-		vfs::File file(sFileName);
-		if(file.openWrite(true,true))
+		auto file{vfs::OpenWriteFile(sFileName)};
+		if(file->openWrite(true,true))
 		{
-			return writeToFile(vfs::WritableFile_t::cast(&file));
+			return writeToFile(file.file());
 		}
 	}
 	return false;
