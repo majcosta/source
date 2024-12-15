@@ -182,12 +182,10 @@ bool vfs::PropertyContainer::initFromXMLFile(vfs::Path const& sFileName, vfs::Pr
 	}
 	else
 	{
-		vfs::File* rfile = new vfs::File(sFileName);
+		auto file{vfs::OpenReadFile(sFileName)};
 		delete_file = true;
-		file = vfs::ReadableFile_t::cast(rfile);
 		if(!file->openRead())
 		{
-			delete file;
 			return false;
 		}
 	}

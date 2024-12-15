@@ -650,11 +650,11 @@ BOOLEAN	SaveGameSettings()
 		catch(vfs::Exception& ex)
 		{
 			SGP_WARNING(ex.what());
-			vfs::File file(GAME_SETTINGS_FILE);
-			if(file.openWrite(true,true))
+			auto file{vfs::OpenWriteFile(GAME_SETTINGS_FILE)};
+			if(file->openWrite(true,true))
 			{
-				vfs::OpenWriteFile wfile( vfs::WritableFile_t::cast(&file));
-				SGP_TRYCATCH_RETHROW(file.write(settings.str().c_str(), settings.str().length()),L"");
+				vfs::OpenWriteFile wfile(file.file());
+				SGP_TRYCATCH_RETHROW(file->write(settings.str().c_str(), settings.str().length()),L"");
 			}
 		}
 	}
@@ -737,11 +737,11 @@ BOOLEAN SaveFeatureFlags()
 		catch(vfs::Exception& ex)
 		{
 			SGP_WARNING(ex.what());
-			vfs::File file(FEATURE_FLAGS_FILE);
-			if(file.openWrite(true,true))
+			auto file{vfs::OpenWriteFile(FEATURE_FLAGS_FILE)};
+			if(file->openWrite(true,true))
 			{
-				vfs::OpenWriteFile wfile( vfs::WritableFile_t::cast(&file));
-				SGP_TRYCATCH_RETHROW(file.write(settings.str().c_str(), settings.str().length()),L"");
+				vfs::OpenWriteFile wfile(file);
+				SGP_TRYCATCH_RETHROW(file->write(settings.str().c_str(), settings.str().length()),L"");
 			}
 		}
 
