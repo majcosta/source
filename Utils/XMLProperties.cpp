@@ -176,13 +176,13 @@ bool vfs::PropertyContainer::initFromXMLFile(vfs::Path const& sFileName, vfs::Pr
 	bool delete_file = false;
 	if(getVFS()->fileExists(sFileName))
 	{
-		vfs::COpenReadFile rfile(sFileName);
+		vfs::OpenReadFile rfile(sFileName);
 		file = &rfile.file();
 		rfile.release();
 	}
 	else
 	{
-		vfs::CFile* rfile = new vfs::CFile(sFileName);
+		vfs::File* rfile = new vfs::File(sFileName);
 		delete_file = true;
 		file = vfs::ReadableFile_t::cast(rfile);
 		if(!file->openRead())

@@ -249,8 +249,8 @@ BOOLEAN InitMainMenu( )
 		is_networked = FALSE;
 
 		// remove Multiplayer profile if it exists
-		vfs::CProfileStack *PS = getVFS()->getProfileStack();
-		vfs::CVirtualProfile *pProf = PS->getProfile("_MULTIPLAYER");
+		vfs::ProfileStack *PS = getVFS()->getProfileStack();
+		vfs::VirtualProfile *pProf = PS->getProfile("_MULTIPLAYER");
 		if( pProf && (pProf == PS->topProfile()) )
 		{
 			SGP_THROW_IFFALSE(PS->popProfile(), "Leaving Multiplayer mode : Could not remove \"_MULTIPLAYER\" profile");

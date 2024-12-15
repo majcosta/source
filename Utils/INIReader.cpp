@@ -45,9 +45,9 @@ CIniReader::CIniReader(const STR8	szFileName)
 	}
 	else
 	{
-		vfs::CProfileStack* profs = getVFS()->getProfileStack();
-		vfs::CProfileStack::Iterator it = profs->begin();
-		std::stack<vfs::CVirtualProfile*> rev_order;
+		vfs::ProfileStack* profs = getVFS()->getProfileStack();
+		vfs::ProfileStack::Iterator it = profs->begin();
+		std::stack<vfs::VirtualProfile*> rev_order;
 		for(; !it.end(); it.next()) { rev_order.push(it.value()); }
 		while(!rev_order.empty())
 		{
@@ -82,9 +82,9 @@ CIniReader::CIniReader(const STR8	szFileName, BOOLEAN Force_Custom_Data_Path)
 	else
 	{
 		CIniReader_File_Found = TRUE;
-		vfs::CProfileStack* profs = getVFS()->getProfileStack();
-		vfs::CProfileStack::Iterator it = profs->begin();
-		std::stack<vfs::CVirtualProfile*> rev_order;
+		vfs::ProfileStack* profs = getVFS()->getProfileStack();
+		vfs::ProfileStack::Iterator it = profs->begin();
+		std::stack<vfs::VirtualProfile*> rev_order;
 		for(; !it.end(); it.next()) { rev_order.push(it.value()); }
 		while(!rev_order.empty())
 		{

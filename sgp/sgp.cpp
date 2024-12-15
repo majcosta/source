@@ -671,7 +671,7 @@ void ShutdownStandardGamingPlatform(void)
 	sgp::Logger::instance().shutdown();
 	vfs::Log::flushDeleteAll();
 	if(vfslog) delete vfslog;
-	vfs::CVirtualFileSystem::shutdownVFS();
+	vfs::VirtualFileSystem::shutdownVFS();
 	vfs::ObjectAllocator::clear();
 }
 

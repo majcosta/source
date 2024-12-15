@@ -206,12 +206,12 @@ SMKFLIC *SmkOpenFlic(const CHAR8 *cFilename)
 			{
 				return NULL;
 			}
-			vfs::COpenReadFile rfile(introname);
+			vfs::OpenReadFile rfile(introname);
 			vfs::size_t size = rfile->getSize();
 			std::vector<vfs::Byte> data(size);
 			rfile->read(&data[0],size);
 
-			vfs::COpenWriteFile wfile(tempfile,true);
+			vfs::OpenWriteFile wfile(tempfile,true);
 			wfile->write(&data[0],size);
 		}
 		catch(std::exception& ex)
@@ -230,7 +230,7 @@ SMKFLIC *SmkOpenFlic(const CHAR8 *cFilename)
 	vfs::Path tempfilename;
 	try
 	{
-		vfs::COpenWriteFile wfile(tempfile);
+		vfs::OpenWriteFile wfile(tempfile);
 		if(!wfile->_getRealPath(tempfilename))
 		{
 			return NULL;

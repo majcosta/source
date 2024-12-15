@@ -216,7 +216,7 @@ class ClientTransferCB : public FileListTransferCBInterface
 			
 			try
 			{
-				vfs::COpenWriteFile wfile(fileName,true,true);
+				vfs::OpenWriteFile wfile(fileName,true,true);
 				wfile->write(onFileStruct->fileData,onFileStruct->finalDataLength);
 			}
 			catch(vfs::Exception& ex)

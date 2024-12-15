@@ -1927,7 +1927,7 @@ void CreateGlobalSummary()
 
 	gfGlobalSummaryExists = FALSE;
 	//Set current directory to JA2\DevInfo which contains all of the summary data
-	vfs::COpenWriteFile wfile(L"DevInfo\\readme.txt",true,true);
+	vfs::OpenWriteFile wfile(L"DevInfo\\readme.txt",true,true);
 	std::string str = "This information is used in conjunction with the editor.\n";
 	str += "This directory or it's contents shouldn't be included with final release.\n";
 	SGP_TRYCATCH_RETHROW( wfile->write(str.c_str(), str.length()), L"" );
@@ -2460,7 +2460,7 @@ void GenerateSummaryList()
 {
 	try
 	{
-		vfs::COpenWriteFile wfile(L"DevInfo/readme.txt",true,true);
+		vfs::OpenWriteFile wfile(L"DevInfo/readme.txt",true,true);
 		std::string str = "This information is used in conjunction with the editor.\n";
 		str += "This directory or it's contents shouldn't be included with final release.\n";
 		SGP_TRYCATCH_RETHROW( wfile->write(str.c_str(), str.length()), L"");

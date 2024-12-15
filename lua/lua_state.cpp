@@ -44,7 +44,7 @@ bool LuaState::EvalFile(const char* filename)
 {
 	try
 	{
-		vfs::COpenReadFile rfile(filename);
+		vfs::OpenReadFile rfile(filename);
 		vfs::UInt32 size = rfile.file().getSize();
 		std::vector<vfs::Byte> buffer(size+1);
 		rfile.file().read(&buffer[0], size);

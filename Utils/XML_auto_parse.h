@@ -181,7 +181,7 @@ namespace xml_auto
 			{
 				return;
 			}
-			vfs::COpenReadFile rfile(pFile);
+			vfs::OpenReadFile rfile(pFile);
 
 			vfs::size_t size = rfile->getSize();
 			std::vector<vfs::Byte> buffer(size+1);

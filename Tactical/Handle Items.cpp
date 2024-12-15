@@ -8767,7 +8767,7 @@ void LoadSectorFortificationPlan( INT16 sSectorX, INT16 sSectorY, INT8 sSectorZ 
 	
 	// get full path to save file
 	vfs::Path vfsPath;
-	vfs::COpenWriteFile rfile( filename, true );
+	vfs::OpenWriteFile rfile( filename, true );
 	rfile->_getRealPath( vfsPath );
 	std::string str = vfsPath.to_string( );
 	
@@ -8816,7 +8816,7 @@ void SaveSectorFortificationPlan( INT16 sSectorX, INT16 sSectorY, INT8 sSectorZ 
 			// I found this to be the easiest solution for using both vfs pathing and being able to use a std::fstream
 			// If you don't like it, fix it yourself, or make vfs not such a pain to use
 			vfs::Path vfsPath;
-			vfs::COpenWriteFile rfile( filename, true );
+			vfs::OpenWriteFile rfile( filename, true );
 			rfile->_getRealPath( vfsPath );
 			std::string str = vfsPath.to_string( );
 
@@ -9619,7 +9619,7 @@ std::vector<GEAR_NODE> LoadEquipmentTemplate( std::string aName )
 
 	// get full path to save file
 	vfs::Path vfsPath;
-	vfs::COpenWriteFile rfile( filename, true );
+	vfs::OpenWriteFile rfile( filename, true );
 	rfile->_getRealPath(vfsPath);
 	std::string str = vfsPath.to_string();
 
@@ -9675,7 +9675,7 @@ void SaveEquipmentTemplate(std::vector<GEAR_NODE> aVec, STR16 aName)
 	// I found this to be the easiest solution for using both vfs pathing and being able to use a std::fstream
 	// If you don't like it, fix it yourself, or make vfs not such a pain to use
 	vfs::Path vfsPath;
-	vfs::COpenWriteFile rfile(filename, true);
+	vfs::OpenWriteFile rfile(filename, true);
 	rfile->_getRealPath(vfsPath);
 	std::string str = vfsPath.to_string();
 
@@ -9767,7 +9767,7 @@ void GetEquipmentTemplates()
 	// I found this to be the easiest solution for using both vfs pathing and being able to use a std::fstream
 	// If you don't like it, fix it yourself, or make vfs not such a pain to use
 	vfs::Path vfsPath;	
-	vfs::COpenWriteFile rfile( filename, true );
+	vfs::OpenWriteFile rfile( filename, true );
 	rfile->_getRealPath(vfsPath);
 
 	vfs::Path dir, file;

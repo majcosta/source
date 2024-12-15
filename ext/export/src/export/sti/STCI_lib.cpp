@@ -36,7 +36,7 @@ BOOLEAN ja2xp::LoadSTCIFileToImage(vfs::ReadableFile_t *pFile, HIMAGE hImage, UI
 
 	// Open the file and read the header
 	
-	vfs::COpenReadFile file(pFile);
+	vfs::OpenReadFile file(pFile);
 	VFS_THROW_IFF( STCI_HEADER_SIZE == pFile->read((vfs::Byte*)&Header,STCI_HEADER_SIZE), L"" );
 	VFS_THROW_IFF( memcmp( Header.cID, STCI_ID_STRING, STCI_ID_LEN ) == 0, L"" );
 
