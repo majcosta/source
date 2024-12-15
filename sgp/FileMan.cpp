@@ -776,7 +776,7 @@ BOOLEAN SetFileManCurrentDirectory( STR pcDirectory )
 {
 	try
 	{
-		vfs::OS::setCurrectDirectory(pcDirectory);
+		vfs::OS::setCurrentDirectory(pcDirectory);
 	}
 	catch(vfs::Exception& ex)
 	{
