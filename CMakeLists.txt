@@ -25,7 +25,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP _CRT_SECURE_NO_DEPRECATE)
 include_directories(
 	"${CMAKE_SOURCE_DIR}/Ja2"
-	"${CMAKE_SOURCE_DIR}/ext/VFS/include"
+	"${CMAKE_SOURCE_DIR}/ext/bfVFS/include"
 	"${CMAKE_SOURCE_DIR}/Utils"
 	"${CMAKE_SOURCE_DIR}/TileEngine"
 	"${CMAKE_SOURCE_DIR}/TacticalAI"
@@ -44,8 +44,8 @@ include_directories(
 # external libraries
 add_subdirectory("ext/libpng")
 add_subdirectory("ext/zlib")
-add_subdirectory("ext/VFS")
-target_link_libraries(bfVFS PRIVATE 7z)
+add_subdirectory("ext/bfVFS")
+target_link_libraries(bfvfs PRIVATE bfvfs7z)
 
 # ja2export utility
 add_subdirectory("ext/export/src")
