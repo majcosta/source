@@ -2,6 +2,7 @@
 #include <Debug.h>
 #include "sgp_logger.h"
 
+#include <vfs/Core/vfs_file_raii.h>
 #include <vfs/Core/vfs_string.h>
 
 LuaState::LuaState(lua_State* state, bool own) : _L(state), _own(own), _registry(state)
@@ -39,7 +40,6 @@ void LuaState::close()
 	}
 }
 
-#include <vfs/Core/vfs_file_raii.h>
 bool LuaState::EvalFile(const char* filename)
 {
 	try
