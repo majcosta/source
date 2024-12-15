@@ -103,6 +103,7 @@ Points of interest:
 #include "WCheck.h"
 #include "WordWrap.h"
 
+#include <algorithm>
 #include <unordered_map>
 #include <unordered_set>
 

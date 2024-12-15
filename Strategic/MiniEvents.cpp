@@ -41,6 +41,8 @@ to call into.
 #include "Town Militia.h"
 #include "Vehicles.h"
 
+#include <algorithm>
+
 extern "C" {
 #include "lua.h"
 #include "lauxlib.h"
