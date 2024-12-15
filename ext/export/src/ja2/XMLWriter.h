@@ -55,7 +55,7 @@ public:
 	bool		closeNode();
 	
 	bool		writeToFile(vfs::Path const& sFileName);
-	bool		writeToFile(vfs::tWritableFile* pFile);
+	bool		writeToFile(vfs::WritableFile_t* pFile);
 
 private:
 	std::string	indent();

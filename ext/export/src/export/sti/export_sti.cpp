@@ -9,7 +9,7 @@
 
 #include <iostream>
 
-bool ja2xp::convertSTItoJPC(vfs::tReadableFile *pFile, vfs::tWritableFile *pOutFile, bool bOffsets, bool rgba)
+bool ja2xp::convertSTItoJPC(vfs::ReadableFile_t *pFile, vfs::WritableFile_t *pOutFile, bool bOffsets, bool rgba)
 {
 	if(!pFile)
 	{
@@ -28,7 +28,7 @@ bool ja2xp::convertSTItoJPC(vfs::tReadableFile *pFile, vfs::tWritableFile *pOutF
 	return false;
 }
 
-bool ja2xp::convertSTItoJPC(vfs::tReadableFile *pFile, vfs::Path const base_out_path, bool bOffsets, bool rgba)
+bool ja2xp::convertSTItoJPC(vfs::ReadableFile_t *pFile, vfs::Path const base_out_path, bool bOffsets, bool rgba)
 {
 	if(!pFile)
 	{
@@ -43,7 +43,7 @@ bool ja2xp::convertSTItoJPC(vfs::tReadableFile *pFile, vfs::Path const base_out_
 	return false;
 }
 
-bool ja2xp::convertSTItoPNG(vfs::tReadableFile *pFile, vfs::tWritableFile *pOutFile, bool rgba)
+bool ja2xp::convertSTItoPNG(vfs::ReadableFile_t *pFile, vfs::WritableFile_t *pOutFile, bool rgba)
 {
 	if(!pFile)
 	{

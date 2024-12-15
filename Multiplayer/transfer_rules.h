@@ -18,7 +18,7 @@ public:
 	CTransferRules();
 
 	bool	initFromTxtFile(vfs::Path const& sPath);
-	bool	initFromTxtFile(vfs::tReadableFile* pFile);
+	bool	initFromTxtFile(vfs::ReadableFile_t* pFile);
 
 	void	setDefaultAction(EAction act);
 	EAction	getDefaultAction();

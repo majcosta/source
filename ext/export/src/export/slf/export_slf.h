@@ -19,7 +19,7 @@ namespace ja2xp
 		virtual void printHelp();
 	};
 
-	bool convertSLFto7z(vfs::tReadableFile* pInFile, vfs::tWritableFile *pOutFile, bool bConvertSTIs=false, bool bPngOffsets=false);
+	bool convertSLFto7z(vfs::ReadableFile_t* pInFile, vfs::WritableFile_t *pOutFile, bool bConvertSTIs=false, bool bPngOffsets=false);
 	bool convertSLFto7z(vfs::Path const& sSrc, vfs::Path const& sDst, bool bConvertSTIs=false, bool bPngOffsets=false);
 };
 

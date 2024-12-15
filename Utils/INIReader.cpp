@@ -54,7 +54,7 @@ CIniReader::CIniReader(const STR8	szFileName)
 			vfs::IBaseFile* file = rev_order.top()->getFile(szFileName);
 			if(file)
 			{
-				m_oProps.initFromIniFile(vfs::tReadableFile::cast(file));
+				m_oProps.initFromIniFile(vfs::ReadableFile_t::cast(file));
 			}
 			rev_order.pop();
 		}
@@ -91,7 +91,7 @@ CIniReader::CIniReader(const STR8	szFileName, BOOLEAN Force_Custom_Data_Path)
 			vfs::IBaseFile* file = rev_order.top()->getFile(szFileName);
 			if(file)
 			{
-				CIniReader_File_Found = ((CIniReader_File_Found != FALSE) && m_oProps.initFromIniFile(vfs::tReadableFile::cast(file))) ? TRUE : FALSE;
+				CIniReader_File_Found = ((CIniReader_File_Found != FALSE) && m_oProps.initFromIniFile(vfs::ReadableFile_t::cast(file))) ? TRUE : FALSE;
 			}
 			rev_order.pop();
 		}

@@ -14,12 +14,12 @@
 
 namespace ja2xp
 {
-	BOOLEAN STCILoadRGB(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fContents,  STCIHeader * pHeader );
-	BOOLEAN STCILoadIndexed(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fContents, STCIHeader * pHeader );
-	BOOLEAN STCISetPalette(vfs::tReadableFile *pFile, PTR pSTCIPalette, HIMAGE hImage );
+	BOOLEAN STCILoadRGB(vfs::ReadableFile_t *pFile, HIMAGE hImage, UINT16 fContents,  STCIHeader * pHeader );
+	BOOLEAN STCILoadIndexed(vfs::ReadableFile_t *pFile, HIMAGE hImage, UINT16 fContents, STCIHeader * pHeader );
+	BOOLEAN STCISetPalette(vfs::ReadableFile_t *pFile, PTR pSTCIPalette, HIMAGE hImage );
 };
 
-BOOLEAN ja2xp::LoadSTCIFileToImage(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fContents )
+BOOLEAN ja2xp::LoadSTCIFileToImage(vfs::ReadableFile_t *pFile, HIMAGE hImage, UINT16 fContents )
 {
 	STCIHeader	Header;
 	image_type	TempImage;
@@ -82,7 +82,7 @@ BOOLEAN ja2xp::LoadSTCIFileToImage(vfs::tReadableFile *pFile, HIMAGE hImage, UIN
 	return( TRUE );		
 }
 
-BOOLEAN ja2xp::STCILoadRGB(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fContents, STCIHeader * pHeader )
+BOOLEAN ja2xp::STCILoadRGB(vfs::ReadableFile_t *pFile, HIMAGE hImage, UINT16 fContents, STCIHeader * pHeader )
 {
 	if (fContents & IMAGE_PALETTE && !(fContents & IMAGE_ALLIMAGEDATA))
 	{ 
@@ -158,7 +158,7 @@ BOOLEAN ja2xp::STCILoadRGB(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fCon
 }
 
 
-BOOLEAN ja2xp::STCILoadIndexed(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 fContents, STCIHeader * pHeader )
+BOOLEAN ja2xp::STCILoadIndexed(vfs::ReadableFile_t *pFile, HIMAGE hImage, UINT16 fContents, STCIHeader * pHeader )
 {
 	UINT32			uiFileSectionSize;
 	PTR				pSTCIPalette;
@@ -360,7 +360,7 @@ BOOLEAN ja2xp::STCILoadIndexed(vfs::tReadableFile *pFile, HIMAGE hImage, UINT16 
 }
 
 
-BOOLEAN ja2xp::STCISetPalette(vfs::tReadableFile *pFile, PTR pSTCIPalette, HIMAGE hImage )
+BOOLEAN ja2xp::STCISetPalette(vfs::ReadableFile_t *pFile, PTR pSTCIPalette, HIMAGE hImage )
 {
 	UINT16								usIndex;
 	STCIPaletteElement *	pubPalette;
@@ -389,7 +389,7 @@ BOOLEAN ja2xp::STCISetPalette(vfs::tReadableFile *pFile, PTR pSTCIPalette, HIMAG
 }
 
 
-BOOLEAN ja2xp::IsSTCIETRLEFile(vfs::tReadableFile *pFile, CHAR8 * ImageFile )
+BOOLEAN ja2xp::IsSTCIETRLEFile(vfs::ReadableFile_t *pFile, CHAR8 * ImageFile )
 {
 //	HWFILE		hFile;
 	STCIHeader	Header;

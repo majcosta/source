@@ -24,7 +24,7 @@ bool CTransferRules::initFromTxtFile(vfs::Path const& sPath)
 		vfs::IBaseFile* pFile = new vfs::CFile(sPath);
 		if(pFile)
 		{
-			bool success = initFromTxtFile(vfs::tReadableFile::cast(pFile));
+			bool success = initFromTxtFile(vfs::ReadableFile_t::cast(pFile));
 			delete pFile;
 			return success;
 		}
@@ -32,7 +32,7 @@ bool CTransferRules::initFromTxtFile(vfs::Path const& sPath)
 	return false;
 }
 
-bool CTransferRules::initFromTxtFile(vfs::tReadableFile* pFile)
+bool CTransferRules::initFromTxtFile(vfs::ReadableFile_t* pFile)
 {
 	if(pFile && pFile->openRead())
 	{

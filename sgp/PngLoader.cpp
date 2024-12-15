@@ -30,7 +30,7 @@ void LoadPalettedPNGImage(HIMAGE hImage, png::png_bytepp rows, png::png_infop in
 
 void user_read_data(png::png_structp png_ptr, png::png_bytep data, png::png_size_t length)
 {
-	SGP_TRYCATCH_RETHROW( static_cast<vfs::tReadableFile*>(png_ptr->io_ptr)->read((vfs::Byte*)data,length),
+	SGP_TRYCATCH_RETHROW( static_cast<vfs::ReadableFile_t*>(png_ptr->io_ptr)->read((vfs::Byte*)data,length),
 		L"error during png file reading");
 }
 
@@ -49,9 +49,9 @@ public:
 
 	bool addCompressedImage(UINT8 *data, UINT32 data_size, UINT32 image_width, UINT32 image_height, INT32 image_offset_x, INT32 image_offset_y);
 
-	bool readAppDataFromXMLFile(HIMAGE hImage, vfs::tReadableFile* pFile);
+	bool readAppDataFromXMLFile(HIMAGE hImage, vfs::ReadableFile_t* pFile);
 
-	bool writeImage(vfs::tWritableFile* pFile);
+	bool writeImage(vfs::WritableFile_t* pFile);
 	bool writeToHIMAGE(HIMAGE pImage);
 private:
 	STCIHeader							_header;
@@ -394,7 +394,7 @@ void CAppDataParser::onTextElement(const XML_Char *str, int len)
 }
 
 
-bool IndexedSTIImage::readAppDataFromXMLFile(HIMAGE hImage, vfs::tReadableFile* pFile)
+bool IndexedSTIImage::readAppDataFromXMLFile(HIMAGE hImage, vfs::ReadableFile_t* pFile)
 {
 	if(!pFile)
 	{
@@ -527,7 +527,7 @@ public:
 		_file = &oFile.file();
 		oFile.release();
 	}
-	LoadPngFile(vfs::tReadableFile* pFile)
+	LoadPngFile(vfs::ReadableFile_t* pFile)
 		: _file(pFile), _struct(NULL), _info(NULL), _row_ptr(NULL)
 	{
 		SGP_THROW_IFFALSE(_file, L"file pointer is NULL");
@@ -600,7 +600,7 @@ public:
 		return _info;
 	}
 private:
-	vfs::tReadableFile* _file;
+	vfs::ReadableFile_t* _file;
 	png::png_structp	_struct;
 	png::png_infop		_info;
 	png::png_bytepp		_row_ptr;
@@ -655,7 +655,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 
 	//vfs::CUncompressed7zLibrary oLib(&oFile.file(),"");
 	vfs::ObjBlockAllocator<vfs::CLibFile> allocator(128);
-	vfs::CUncompressed7zLibrary oLib(vfs::tReadableFile::cast(&oBuffer),"",false, &allocator);
+	vfs::CUncompressed7zLibrary oLib(vfs::ReadableFile_t::cast(&oBuffer),"",false, &allocator);
 
 	if(!oLib.init())
 	{
@@ -673,7 +673,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 	}
 	vFiles.resize(count_files);
 	it = oLib.begin();
-	vfs::tReadableFile* appdata_file = NULL;
+	vfs::ReadableFile_t* appdata_file = NULL;
 	for(; !it.end(); it.next())
 	{
 		// check extension
@@ -698,7 +698,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 			}
 			else if (vfs::StrCmp::Equal(fname.substr(dot,fname.length()-dot), CONST_DOTXML) )
 			{
-				appdata_file = vfs::tReadableFile::cast(it.value());
+				appdata_file = vfs::ReadableFile_t::cast(it.value());
 			}
 		}
 	}
@@ -710,10 +710,10 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 		try
 		{
 			// VR r2348 fix - loading .jpc.7z with a single image would cause exception as file was not considered open (by anv)
-			//LoadPngFile lpng(vfs::tReadableFile::cast(vFiles[0]));
+			//LoadPngFile lpng(vfs::ReadableFile_t::cast(vFiles[0]));
 			vfs::CBufferFile oTempFile("");
-			oTempFile.copyToBuffer(*vfs::tReadableFile::cast(vFiles[0]));
-			LoadPngFile lpng(vfs::tReadableFile::cast(&oTempFile));
+			oTempFile.copyToBuffer(*vfs::ReadableFile_t::cast(vFiles[0]));
+			LoadPngFile lpng(vfs::ReadableFile_t::cast(&oTempFile));
 
 			bool bLoadS = lpng.Load();
 	
@@ -763,10 +763,10 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 			try
 			{
 				vfs::CBufferFile oTempFile("");
-				oTempFile.copyToBuffer( *vfs::tReadableFile::cast(*fit) );
+				oTempFile.copyToBuffer( *vfs::ReadableFile_t::cast(*fit) );
 
-//				LoadPngFile lpng( vfs::tReadableFile::cast(*fit) );
-				LoadPngFile lpng( vfs::tReadableFile::cast(&oTempFile) );
+//				LoadPngFile lpng( vfs::ReadableFile_t::cast(*fit) );
+				LoadPngFile lpng( vfs::ReadableFile_t::cast(&oTempFile) );
 	
 				bool bLoadS = lpng.Load();
 				if(bLoadS)

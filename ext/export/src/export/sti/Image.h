@@ -23,7 +23,7 @@ namespace ja2xp
 	public:
 
 		CImage(vfs::Path const& sFileName); 
-		CImage(vfs::tReadableFile *pFile); 
+		CImage(vfs::ReadableFile_t *pFile); 
 		~CImage();
 		
 		EImageType GetImageType();
@@ -48,17 +48,17 @@ namespace ja2xp
 
 		void	LoadBMP();
 		//bool	WriteAsBMPs(vfs_string sOutPathName);
-		bool	WriteAsPNGs(vfs::tWritableFile* outFile, bool bWriteOffsets=false, bool rgba=false );
+		bool	WriteAsPNGs(vfs::WritableFile_t* outFile, bool bWriteOffsets=false, bool rgba=false );
 		bool	WriteAsPNGs(vfs::Path outpath, bool bWriteOffsets=false, bool rgba=false);
-		bool	WriteFirstPNG(vfs::tWritableFile* outFile, bool rgba=false);
+		bool	WriteFirstPNG(vfs::WritableFile_t* outFile, bool rgba=false);
 		//bool	WriteAsSTIs(vfs_string sOutPathName);
 
 	protected:
-		bool	writeSubImageToPNGFile(int i, vfs::tWritableFile* file, bool rgba = false);
-		bool	writeImageToPNGFile(vfs::tWritableFile* file, bool rgba = false);
-		bool	writeSTIAppData(std::vector<bool> const& write_image, bool bWriteOffsets, vfs::tWritableFile* file);
+		bool	writeSubImageToPNGFile(int i, vfs::WritableFile_t* file, bool rgba = false);
+		bool	writeImageToPNGFile(vfs::WritableFile_t* file, bool rgba = false);
+		bool	writeSTIAppData(std::vector<bool> const& write_image, bool bWriteOffsets, vfs::WritableFile_t* file);
 	private:
-		vfs::tReadableFile*	m_pImageFile;
+		vfs::ReadableFile_t*	m_pImageFile;
 		EImageType			m_eImageType;
 		image_type*			m_pRawImage;
 		bool				m_bImageLoaded;
