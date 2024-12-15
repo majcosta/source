@@ -640,7 +640,7 @@ bool LoadPNGFileToImage(HIMAGE hImage, UINT16 fContents)
 	return true;
 }
 
-
+/*
 bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 {
 	if(!getVFS()->fileExists(hImage->ImageFile))
@@ -810,7 +810,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 	}
 	return success;
 }
-
+*/
 
 void Load32bppPNGImage(HIMAGE hImage, png::png_bytepp rows, png::png_infop info)
 {

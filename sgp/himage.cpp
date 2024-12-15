@@ -261,10 +261,11 @@ BOOLEAN LoadImageData( HIMAGE hImage, UINT16 fContents )
 			fReturnVal = LoadPNGFileToImage( hImage, fContents );
 			break;
 
+		/*
 		case JPC_FILE_READER:
 			fReturnVal = LoadJPCFileToImage( hImage, fContents );
 			break;
-		
+		*/
 		default:
 
 			DbgMessage( TOPIC_HIMAGE, DBG_LEVEL_2, "Unknown image loader was specified." );

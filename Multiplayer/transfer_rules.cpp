@@ -73,7 +73,7 @@ bool CTransferRules::initFromTxtFile(vfs::ReadableFile_t* pFile)
 						else
 						{
 							std::wstring trybuffer = L"Invalid UTF-8 character in string";
-							VFS_IGNOREEXCEPTION( trybuffer = vfs::String(sBuffer).c_wcs(), "" ); /* just make sure we don't break off when string conversion fails */
+							//VFS_IGNOREEXCEPTION( trybuffer = vfs::String(sBuffer).c_wcs(), "" ); /* just make sure we don't break off when string conversion fails */
 							std::wstringstream wss;
 							wss << L"Unknown action in file \"" << pFile->getPath().c_wcs()
 								<< L", line " << line_counter << " : " << vfs::String(sBuffer).c_wcs();
