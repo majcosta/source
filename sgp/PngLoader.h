@@ -6,7 +6,7 @@
 
 bool LoadPNGFileToImage(HIMAGE hImage, UINT16 fContents);
 
-bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents);
+//bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents);
 
 
 #endif // _PNGLOADER_H_
