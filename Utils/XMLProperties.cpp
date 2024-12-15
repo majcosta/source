@@ -177,7 +177,7 @@ bool vfs::PropertyContainer::initFromXMLFile(vfs::Path const& sFileName, vfs::Pr
 	if(getVFS()->fileExists(sFileName))
 	{
 		vfs::OpenReadFile rfile(sFileName);
-		file = &rfile.file();
+		file = rfile.file();
 		rfile.release();
 	}
 	else

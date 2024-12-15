@@ -56,7 +56,7 @@ bool XMLWriter::writeToFile(vfs::Path const& sFileName)
 	try
 	{
 		vfs::OpenWriteFile file(sFileName,true,true);
-		return writeToFile( &file.file() );
+		return writeToFile( file.file() );
 	}
 	catch(vfs::Exception& ex)
 	{

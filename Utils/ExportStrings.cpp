@@ -533,7 +533,7 @@ void Loc::ExportMercBio()
 	vfs::String::char_t pInfoString[SIZE_MERC_BIO_INFO];
 	vfs::String::char_t pAddInfo[SIZE_MERC_ADDITIONAL_INFO];
 	vfs::OpenReadFile rfile("BINARYDATA\\aimbios.edt");
-	vfs::ReadableFile_t& file = rfile.file();
+	vfs::ReadableFile_t* file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<40; ++i)
@@ -541,12 +541,12 @@ void Loc::ExportMercBio()
 		memset(pInfoString,0,SIZE_MERC_BIO_INFO*sizeof(wchar_t));
 		memset(pAddInfo,0,SIZE_MERC_ADDITIONAL_INFO*sizeof(wchar_t));
 		//
-		file.read((vfs::Byte*)pInfoString, SIZE_MERC_BIO_INFO);
+		file->read((vfs::Byte*)pInfoString, SIZE_MERC_BIO_INFO);
 		DecodeString(pInfoString,SIZE_MERC_BIO_INFO);
 		Loc::Translate(pInfoString, SIZE_MERC_BIO_INFO, lang);
 		props.setStringProperty(L"Bio", vfs::toString<wchar_t>(i), pInfoString);
 		
-		file.read((vfs::Byte*)pAddInfo, SIZE_MERC_ADDITIONAL_INFO);
+		file->read((vfs::Byte*)pAddInfo, SIZE_MERC_ADDITIONAL_INFO);
 		DecodeString(pAddInfo, SIZE_MERC_ADDITIONAL_INFO);
 		Loc::Translate(pAddInfo, SIZE_MERC_ADDITIONAL_INFO, lang);
 		props.setStringProperty(L"Add", vfs::toString<wchar_t>(i), pAddInfo);
@@ -560,14 +560,14 @@ void Loc::ExportAIMHistory()
 	#define AIM_HISTORY_LINE_SIZE 400 * 2
 	vfs::String::char_t pHistLine[AIM_HISTORY_LINE_SIZE];
 	vfs::OpenReadFile rfile("BINARYDATA\\AimHist.edt");
-	vfs::ReadableFile_t& file = rfile.file();
+	vfs::ReadableFile_t* file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<23; ++i)
 	{
 		memset(pHistLine,0,AIM_HISTORY_LINE_SIZE*sizeof(wchar_t));
 		//
-		file.read((vfs::Byte*)pHistLine, AIM_HISTORY_LINE_SIZE);
+		file->read((vfs::Byte*)pHistLine, AIM_HISTORY_LINE_SIZE);
 		DecodeString(pHistLine,AIM_HISTORY_LINE_SIZE);
 		Loc::Translate(pHistLine, AIM_HISTORY_LINE_SIZE, lang);
 		props.setStringProperty(L"Line", vfs::toString<wchar_t>(i), pHistLine);
@@ -582,14 +582,14 @@ void Loc::ExportAIMPolicy()
 	#define AIM_HISTORY_LINE_SIZE 400 * 2
 	vfs::String::char_t pPolLine[AIM_HISTORY_LINE_SIZE];
 	vfs::OpenReadFile rfile("BINARYDATA\\AimPol.edt");
-	vfs::ReadableFile_t& file = rfile.file();
+	vfs::ReadableFile_t* file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<46; ++i)
 	{
 		memset(pPolLine,0,400*sizeof(wchar_t));
 		//
-		file.read((vfs::Byte*)pPolLine, AIM_HISTORY_LINE_SIZE);
+		file->read((vfs::Byte*)pPolLine, AIM_HISTORY_LINE_SIZE);
 		DecodeString(pPolLine,AIM_HISTORY_LINE_SIZE);
 		Loc::Translate(pPolLine, AIM_HISTORY_LINE_SIZE, lang);
 		props.setStringProperty(L"Line", vfs::toString<wchar_t>(i), pPolLine);
@@ -603,14 +603,14 @@ void Loc::ExportAlumniName()
 	#define AIM_ALUMNI_NAME_SIZE 80 * 2
 	vfs::String::char_t pAlumniName[AIM_ALUMNI_NAME_SIZE];
 	vfs::OpenReadFile rfile("BINARYDATA\\AlumName.edt");
-	vfs::ReadableFile_t& file = rfile.file();
+	vfs::ReadableFile_t* file = rfile.file();
 
 	vfs::PropertyContainer props; 
 	for(int i=0; i<51; ++i)
 	{
 		memset(pAlumniName,0,AIM_ALUMNI_NAME_SIZE*sizeof(wchar_t));
 		//
-		file.read((vfs::Byte*)pAlumniName, AIM_ALUMNI_NAME_SIZE);
+		file->read((vfs::Byte*)pAlumniName, AIM_ALUMNI_NAME_SIZE);
 		DecodeString(pAlumniName,AIM_ALUMNI_NAME_SIZE);
 		Loc::Translate(pAlumniName, AIM_ALUMNI_NAME_SIZE, lang);
 		props.setStringProperty(L"Line", vfs::toString<wchar_t>(i), pAlumniName);
@@ -631,10 +631,10 @@ void Loc::ExportDialogues()
 	{
 		vfs::PropertyContainer props;
 		vfs::OpenReadFile rfile(it.value());
-		vfs::ReadableFile_t& file = rfile.file();
+		vfs::ReadableFile_t* file = rfile.file();
 
 		std::wstringstream wss;
-		wss.str(file.getName().c_str());
+		wss.str(file->getName().c_str());
 		int id=0;
 		wss >> id;
 
@@ -642,7 +642,7 @@ void Loc::ExportDialogues()
 		{
 			memset(pDiagLine,0,DIALOGUESIZE*sizeof(wchar_t));
 			//
-			if(file.read((vfs::Byte*)pDiagLine, DIALOGUESIZE) > 0)
+			if(file->read((vfs::Byte*)pDiagLine, DIALOGUESIZE) > 0)
 			{
 				DecodeString(pDiagLine,DIALOGUESIZE);
 				Loc::Translate(pDiagLine, DIALOGUESIZE, lang);
@@ -653,7 +653,7 @@ void Loc::ExportDialogues()
 			}
 		}
 		vfs::Path x(L"Localization/Dialogue");
-		x += vfs::Path(file.getName().c_wcs() + L".xml");
+		x += vfs::Path(file->getName().c_wcs() + L".xml");
 		props.writeToXMLFile(x, vfs::PropertyContainer::TagMap());
 	}
 }
@@ -670,9 +670,9 @@ void Loc::ExportNPCDialogues()
 	{
 		vfs::PropertyContainer props;
 		vfs::OpenReadFile rfile(it.value());
-		vfs::ReadableFile_t& file = rfile.file();
+		vfs::ReadableFile_t* file = rfile.file();
 
-		vfs::String::str_t const& ws = file.getName().c_wcs();
+		vfs::String::str_t const& ws = file->getName().c_wcs();
 		vfs::String::str_t::size_type pos = ws.find_first_of(L".");
 		vfs::String id = ws.substr(0,pos);
 
@@ -690,7 +690,7 @@ void Loc::ExportNPCDialogues()
 		{
 			memset(pDiagLine,0,DIALOGUESIZE*sizeof(wchar_t));
 			//
-			if(file.read((vfs::Byte*)pDiagLine, SIZE) > 0)
+			if(file->read((vfs::Byte*)pDiagLine, SIZE) > 0)
 			{
 				DecodeString(pDiagLine,SIZE);
 				Loc::Translate(pDiagLine, SIZE, lang);
@@ -701,7 +701,7 @@ void Loc::ExportNPCDialogues()
 			}
 		}
 		vfs::Path x(L"Localization/NpcDialogue");
-		x += vfs::Path(file.getName().c_wcs() + L".xml");
+		x += vfs::Path(file->getName().c_wcs() + L".xml");
 		props.writeToXMLFile(x, vfs::PropertyContainer::TagMap());
 	}
 }
