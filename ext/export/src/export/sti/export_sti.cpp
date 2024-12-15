@@ -60,7 +60,7 @@ bool ja2xp::convertSTItoPNG(vfs::ReadableFile_t *pFile, vfs::WritableFile_t *pOu
 
 bool ja2xp::convertSTItoJPC(vfs::Path const& sSrc, vfs::Path const& sDst, bool bPacked, bool bOffsets, bool bOnePng, bool rgba)
 {
-	vfs::CVirtualFileSystem::Iterator it = getVFS()->begin(sSrc);
+	vfs::VirtualFileSystem::Iterator it = getVFS()->begin(sSrc);
 	int file_counter = 0;
 	for(; !it.end(); it.next())
 	{
@@ -91,7 +91,7 @@ bool ja2xp::convertSTItoJPC(vfs::Path const& sSrc, vfs::Path const& sDst, bool b
 			{
 				out_name = sDst;
 			}
-			vfs::COpenWriteFile wfile(out_name,true,true);
+			vfs::OpenWriteFile wfile(out_name,true,true);
 
 			if(	!convertSTItoPNG( it.value(), &(wfile.file()), rgba ) )
 			{
@@ -110,7 +110,7 @@ bool ja2xp::convertSTItoJPC(vfs::Path const& sSrc, vfs::Path const& sDst, bool b
 			{
 				out_name = sDst;
 			}
-			vfs::COpenWriteFile wfile(out_name,true,true);
+			vfs::OpenWriteFile wfile(out_name,true,true);
 
 			if(	!convertSTItoJPC( it.value(), &(wfile.file()), bOffsets, rgba ) )
 			{

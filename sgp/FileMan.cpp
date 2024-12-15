@@ -300,10 +300,10 @@ HWFILE FileOpen( STR strFilename, UINT32 uiOptions, BOOLEAN fDeleteOnClose, STR 
 	{
 		if(uiOptions & FILE_ACCESS_WRITE)
 		{
-			// 'vfs::CVirtualFile::SF_TOP' should be enough, but if for some strange reason
+			// 'vfs::VirtualFile::SF_TOP' should be enough, but if for some strange reason
 			// file creation fails, we will stop at a writable profile 
 			// and won't unintentionally mess up a file from another profile
-			vfs::COpenWriteFile open_w( path, true, false, vfs::CVirtualFile::SF_STOP_ON_WRITABLE_PROFILE);
+			vfs::OpenWriteFile open_w( path, true, false, vfs::VirtualFile::SF_STOP_ON_WRITABLE_PROFILE);
 			pFile = &open_w.file();
 			open_w.release();
 			s_mapFiles[pFile].op = SOperation::WRITE;
@@ -313,13 +313,13 @@ HWFILE FileOpen( STR strFilename, UINT32 uiOptions, BOOLEAN fDeleteOnClose, STR 
 		{
 			if(strProfilename && strProfilename[0])
 			{
-				vfs::COpenReadFile open_r(vfs::ReadableFile_t::cast(getVFS()->getFile(path, strProfilename)));
+				vfs::OpenReadFile open_r(vfs::ReadableFile_t::cast(getVFS()->getFile(path, strProfilename)));
 				pFile = &open_r.file();
 				open_r.release();
 			}
 			else
 			{
-				vfs::COpenReadFile open_r(path, vfs::CVirtualFile::SF_TOP);
+				vfs::OpenReadFile open_r(path, vfs::VirtualFile::SF_TOP);
 				pFile = &open_r.file();
 				open_r.release();
 			}
@@ -456,7 +456,7 @@ BOOLEAN FileReadLine( HWFILE hFile, std::string* pDest )
 		vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast( pFile );
 		if ( pRF && pDest )
 		{
-			vfs::CReadLine rl( *pRF, false );
+			vfs::ReadLine rl( *pRF, false );
 			rl.getLine( *pDest );
 			return TRUE;
 		}
@@ -553,7 +553,7 @@ BOOLEAN FileWrite( HWFILE hFile, PTR pDest, UINT32 uiBytesToWrite, UINT32 *puiBy
 BOOLEAN FileLoad( STR strFilename, PTR pDest, UINT32 uiBytesToRead, UINT32 *puiBytesRead )
 {
 	vfs::ReadableFile_t *pFile = getVFS()->getReadFile(vfs::Path(strFilename));
-	vfs::COpenReadFile rfile(pFile);
+	vfs::OpenReadFile rfile(pFile);
 	if(pFile)
 	{
 		UINT32 uiNumBytesRead;
@@ -834,7 +834,7 @@ BOOLEAN GetExecutableDirectory( STRING512 pcDirectory )
 	return true;
 }
 
-static vfs::CVirtualFileSystem::Iterator file_iter; 
+static vfs::VirtualFileSystem::Iterator file_iter; 
 BOOLEAN GetFileFirst( CHAR8 * pSpec, GETFILESTRUCT *pGFStruct )
 {
 	CHECKF( pSpec != NULL );
@@ -885,7 +885,7 @@ BOOLEAN GetFileNext( GETFILESTRUCT *pGFStruct )
 
 void GetFileClose( GETFILESTRUCT *pGFStruct )
 {
-	file_iter = vfs::CVirtualFileSystem::Iterator();
+	file_iter = vfs::VirtualFileSystem::Iterator();
 }
 
 

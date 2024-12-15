@@ -1352,7 +1352,7 @@ BOOLEAN InitSaveGameArray()
 				// anv: read last modified date property of save file
 				// get full path to save file
 				vfs::Path vfsPath;
-				vfs::COpenReadFile rfile(zSaveGameName);
+				vfs::OpenReadFile rfile(zSaveGameName);
 				rfile->_getRealPath(vfsPath);
 				string str = vfsPath.to_string();
 				LPCSTR lpSaveGamePath = str.c_str();

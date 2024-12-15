@@ -1229,7 +1229,7 @@ void AnalyzeProfiles()
 			settings << j << " " << traitcntr[j] << " " << traitcntr[j] - 2 * experttraitcntr[j] << " " << experttraitcntr[j] << endl;
 		}
 
-		vfs::COpenWriteFile wfile( "MercProfileAnalysis.txt", true, true );
+		vfs::OpenWriteFile wfile( "MercProfileAnalysis.txt", true, true );
 		wfile->write( settings.str().c_str(), settings.str().length() );
 	}
 }

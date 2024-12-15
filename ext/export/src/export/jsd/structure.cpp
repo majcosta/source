@@ -14,7 +14,7 @@ bool ja2xp::ConvertStructure(vfs::ReadableFile_t* pStructureFile, vfs::WritableF
 	{
 		return false;
 	}
-	vfs::COpenReadFile rfile(pFile);
+	vfs::OpenReadFile rfile(pFile);
 
 	XMLWriter xmlw;
 	xmlw.addAttributeToNextValue( "filename", vfs::String::as_utf8( rfile->getPath()() ) );

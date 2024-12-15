@@ -404,7 +404,7 @@ bool IndexedSTIImage::readAppDataFromXMLFile(HIMAGE hImage, vfs::ReadableFile_t*
 	UINT32 uiSize = 0;
 	try
 	{
-		vfs::COpenReadFile oFile(pFile);
+		vfs::OpenReadFile oFile(pFile);
 		uiSize = oFile->getSize();
 		vBuffer.resize(uiSize+1);
 
@@ -523,7 +523,7 @@ public:
 		: _file(NULL), _struct(NULL), _info(NULL), _row_ptr(NULL)
 	{
 		// Open and read in the file
-		vfs::COpenReadFile oFile(sFile);
+		vfs::OpenReadFile oFile(sFile);
 		_file = &oFile.file();
 		oFile.release();
 	}
@@ -647,15 +647,15 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 	{
 		return false;
 	}
-	vfs::CBufferFile oBuffer("");
+	vfs::BufferFile oBuffer("");
 
-	vfs::COpenReadFile oFile(hImage->ImageFile);
+	vfs::OpenReadFile oFile(hImage->ImageFile);
 	SGP_TRYCATCH_RETHROW(oBuffer.copyToBuffer(oFile.file()), L"Could not copy file to buffer");
 	oBuffer.close();
 
-	//vfs::CUncompressed7zLibrary oLib(&oFile.file(),"");
-	vfs::ObjBlockAllocator<vfs::CLibFile> allocator(128);
-	vfs::CUncompressed7zLibrary oLib(vfs::ReadableFile_t::cast(&oBuffer),"",false, &allocator);
+	//vfs::Uncompressed7zLibrary oLib(&oFile.file(),"");
+	vfs::ObjBlockAllocator<vfs::LibFile> allocator(128);
+	vfs::Uncompressed7zLibrary oLib(vfs::ReadableFile_t::cast(&oBuffer),"",false, &allocator);
 
 	if(!oLib.init())
 	{
@@ -666,7 +666,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 
 	std::vector<vfs::IBaseFile*> vFiles;
 	int count_files = 0;
-	vfs::CUncompressed7zLibrary::Iterator it = oLib.begin();
+	vfs::Uncompressed7zLibrary::Iterator it = oLib.begin();
 	for(; !it.end(); it.next())
 	{
 		count_files++;
@@ -711,7 +711,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 		{
 			// VR r2348 fix - loading .jpc.7z with a single image would cause exception as file was not considered open (by anv)
 			//LoadPngFile lpng(vfs::ReadableFile_t::cast(vFiles[0]));
-			vfs::CBufferFile oTempFile("");
+			vfs::BufferFile oTempFile("");
 			oTempFile.copyToBuffer(*vfs::ReadableFile_t::cast(vFiles[0]));
 			LoadPngFile lpng(vfs::ReadableFile_t::cast(&oTempFile));
 
@@ -762,7 +762,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 			}
 			try
 			{
-				vfs::CBufferFile oTempFile("");
+				vfs::BufferFile oTempFile("");
 				oTempFile.copyToBuffer( *vfs::ReadableFile_t::cast(*fit) );
 
 //				LoadPngFile lpng( vfs::ReadableFile_t::cast(*fit) );

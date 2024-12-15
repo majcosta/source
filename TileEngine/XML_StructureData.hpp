@@ -557,7 +557,7 @@ public:
 		{
 			int x = 0;
 			vfs::String token;
-			vfs::CTokenizer tok(char_data);
+			vfs::Tokenizer tok(char_data);
 			while(tok.next(token, L','))
 			{
 				if(x >= 0 && x < 5)

@@ -36,7 +36,7 @@ bool ja2xp::convertSLFto7z(vfs::ReadableFile_t* pInFile, vfs::WritableFile_t *pO
 	for(; !it.end(); it.next())
 	{
 		count++;
-		vfs::CBufferFile* temp_file = NULL;
+		vfs::BufferFile* temp_file = NULL;
 		vfs::ReadableFile_t *file = vfs::ReadableFile_t::cast(it.value());
 		if(bConvertSTIs)
 		{
@@ -44,7 +44,7 @@ bool ja2xp::convertSLFto7z(vfs::ReadableFile_t* pInFile, vfs::WritableFile_t *pO
 			if(vfs::StrCmp::Equal(filename().substr(filename().length()-4,4), L".sti"))
 			{
 				vfs::Path path = filename().substr(0,filename.length()-4) + L".jpc.7z";
-				temp_file = new vfs::CBufferFile(path);
+				temp_file = new vfs::BufferFile(path);
 				if(convertSTItoJPC(vfs::ReadableFile_t::cast(it.value()), vfs::WritableFile_t::cast(temp_file), bPngOffsets, false))
 				{
 					file = vfs::ReadableFile_t::cast( temp_file );
@@ -79,7 +79,7 @@ bool ja2xp::convertSLFto7z(vfs::ReadableFile_t* pInFile, vfs::WritableFile_t *pO
 
 bool ja2xp::convertSLFto7z(vfs::Path const& sSrc, vfs::Path const& sDst, bool bConvertSTIs, bool bPngOffsets)
 {
-	vfs::CVirtualFileSystem::Iterator it = getVFS()->begin(sSrc);
+	vfs::VirtualFileSystem::Iterator it = getVFS()->begin(sSrc);
 	int file_counter = 0;
 	for(; !it.end(); it.next())
 	{
@@ -108,7 +108,7 @@ bool ja2xp::convertSLFto7z(vfs::Path const& sSrc, vfs::Path const& sDst, bool bC
 		 
 		std::wcout << L"Converting file \"" << it.value()->getPath().c_wcs() << L"\"" << std::endl;
 
-		vfs::COpenWriteFile wfile(out_name,true,true);
+		vfs::OpenWriteFile wfile(out_name,true,true);
 		if(!convertSLFto7z(it.value(), &wfile.file(), bConvertSTIs, bPngOffsets))
 		{
 			printf("\n");

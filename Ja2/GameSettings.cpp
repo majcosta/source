@@ -644,16 +644,16 @@ BOOLEAN	SaveGameSettings()
 
 		try
 		{
-			vfs::COpenWriteFile wfile(GAME_SETTINGS_FILE,true,true);
+			vfs::OpenWriteFile wfile(GAME_SETTINGS_FILE,true,true);
 			wfile->write(settings.str().c_str(), settings.str().length());
 		}
 		catch(vfs::Exception& ex)
 		{
 			SGP_WARNING(ex.what());
-			vfs::CFile file(GAME_SETTINGS_FILE);
+			vfs::File file(GAME_SETTINGS_FILE);
 			if(file.openWrite(true,true))
 			{
-				vfs::COpenWriteFile wfile( vfs::WritableFile_t::cast(&file));
+				vfs::OpenWriteFile wfile( vfs::WritableFile_t::cast(&file));
 				SGP_TRYCATCH_RETHROW(file.write(settings.str().c_str(), settings.str().length()),L"");
 			}
 		}
@@ -731,16 +731,16 @@ BOOLEAN SaveFeatureFlags()
 
 		try
 		{
-			vfs::COpenWriteFile wfile(FEATURE_FLAGS_FILE,true,true);
+			vfs::OpenWriteFile wfile(FEATURE_FLAGS_FILE,true,true);
 			wfile->write(settings.str().c_str(), settings.str().length());
 		}
 		catch(vfs::Exception& ex)
 		{
 			SGP_WARNING(ex.what());
-			vfs::CFile file(FEATURE_FLAGS_FILE);
+			vfs::File file(FEATURE_FLAGS_FILE);
 			if(file.openWrite(true,true))
 			{
-				vfs::COpenWriteFile wfile( vfs::WritableFile_t::cast(&file));
+				vfs::OpenWriteFile wfile( vfs::WritableFile_t::cast(&file));
 				SGP_TRYCATCH_RETHROW(file.write(settings.str().c_str(), settings.str().length()),L"");
 			}
 		}

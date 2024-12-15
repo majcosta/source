@@ -16,7 +16,7 @@
 
 bool ja2xp::convertJSDtoXML(vfs::Path const& sSrc, vfs::Path const& sDst)
 {
-	vfs::CVirtualFileSystem::Iterator it = getVFS()->begin(sSrc);
+	vfs::VirtualFileSystem::Iterator it = getVFS()->begin(sSrc);
 	int file_counter = 0;
 	for(; !it.end(); it.next())
 	{
@@ -45,7 +45,7 @@ bool ja2xp::convertJSDtoXML(vfs::Path const& sSrc, vfs::Path const& sDst)
 		 
 		std::wcout << L"Converting file \"" << it.value()->getPath().c_wcs() << L"\"" << std::endl;
 
-		vfs::COpenWriteFile wfile(out_name,true,true);
+		vfs::OpenWriteFile wfile(out_name,true,true);
 		if(!ConvertStructure(it.value(), &wfile.file()))
 		{
 			printf("Error converting file : %s", vfs::String::as_utf8(it.value()->getPath()()));

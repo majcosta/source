@@ -165,12 +165,12 @@ void LoadSaveScreenEntry()
 	iTopFileShown = iTotalFiles = 0;
 	gzProfileName[0] = 0;//dnl ch81 021213
 	FDLG_LIST* TempFileList = NULL;
-	vfs::CProfileStack* st = getVFS()->getProfileStack();
-	vfs::CProfileStack::Iterator it = st->begin();
+	vfs::ProfileStack* st = getVFS()->getProfileStack();
+	vfs::ProfileStack::Iterator it = st->begin();
 	while(!it.end())
 	{
 		TempFileList = NULL;
-		vfs::CVirtualProfile* prof = it.value();
+		vfs::VirtualProfile* prof = it.value();
 		memset(&FileInfo, 0, sizeof(GETFILESTRUCT));
 		strcpy(FileInfo.zFileName, "< ");
 		// Cut filename off if it's too long for the buffer
@@ -192,7 +192,7 @@ void LoadSaveScreenEntry()
 		}
 		TempFileList = AddToFDlgList(TempFileList, &FileInfo);
 		iTotalFiles++;
-		vfs::CVirtualProfile::FileIterator fit = prof->files(L"MAPS/*");
+		vfs::VirtualProfile::FileIterator fit = prof->files(L"MAPS/*");
 		while(!fit.end())
 		{
 			vfs::String fname = fit.value()->getName().c_str();
@@ -456,11 +456,11 @@ UINT32 LoadSaveScreenHandle(void)
 			sprintf(gszCurrFilename, "MAPS\\%S", gzFilename);
 			gfFileExists = FALSE;
 			gfReadOnly = TRUE;
-			vfs::CProfileStack* st = getVFS()->getProfileStack();
-			vfs::CProfileStack::Iterator it = st->begin();
+			vfs::ProfileStack* st = getVFS()->getProfileStack();
+			vfs::ProfileStack::Iterator it = st->begin();
 			while(!it.end())
 			{
-				vfs::CVirtualProfile* prof = it.value();
+				vfs::VirtualProfile* prof = it.value();
 				if(prof->cWritable == true)
 				{
 					gfReadOnly = FALSE;

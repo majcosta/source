@@ -530,17 +530,17 @@ void ja2::mp::InitializeMultiplayerProfile(vfs::Path const& profileRoot)
 	}
 
 	// create and initialize a new Multiplayer profile
-	std::unique_ptr<vfs::CVirtualProfile> pProf( new vfs::CVirtualProfile("_MULTIPLAYER",profileRoot,true) );
+	std::unique_ptr<vfs::VirtualProfile> pProf( new vfs::VirtualProfile("_MULTIPLAYER",profileRoot,true) );
 
 	if(!vfs_init::initWriteProfile(*pProf))
 	{
 		SGP_THROW(_BS(L"Could not initialize client profile") << profileRoot << _BS::wget);
 	}
 
-	vfs::CProfileStack *PS = getVFS()->getProfileStack();
+	vfs::ProfileStack *PS = getVFS()->getProfileStack();
 
 	// remove old Multiplayer profile (if it exists)
-	vfs::CVirtualProfile *pOldProf = PS->getProfile("_MULTIPLAYER");
+	vfs::VirtualProfile *pOldProf = PS->getProfile("_MULTIPLAYER");
 	if( pOldProf && (pOldProf == PS->topProfile()) )
 	{
 		SGP_THROW_IFFALSE(PS->popProfile(), L"Could not remove old \"_MULTIPLAYER\" profile");

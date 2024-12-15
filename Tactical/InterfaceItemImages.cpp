@@ -57,7 +57,7 @@ bool MDItemVideoObjects::registerItemsFromFilePattern(vfs::Path const& sFilePatt
 {
 	std::wstringstream wss;
 	int item = 0;
-	vfs::CVirtualFileSystem::Iterator it = getVFS()->begin(sFilePattern);
+	vfs::VirtualFileSystem::Iterator it = getVFS()->begin(sFilePattern);
 	if(it.end())
 	{
 		return false;

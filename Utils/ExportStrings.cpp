@@ -532,7 +532,7 @@ void Loc::ExportMercBio()
 
 	vfs::String::char_t pInfoString[SIZE_MERC_BIO_INFO];
 	vfs::String::char_t pAddInfo[SIZE_MERC_ADDITIONAL_INFO];
-	vfs::COpenReadFile rfile("BINARYDATA\\aimbios.edt");
+	vfs::OpenReadFile rfile("BINARYDATA\\aimbios.edt");
 	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
@@ -559,7 +559,7 @@ void Loc::ExportAIMHistory()
 	Loc::Language lang = gs_Lang;
 	#define AIM_HISTORY_LINE_SIZE 400 * 2
 	vfs::String::char_t pHistLine[AIM_HISTORY_LINE_SIZE];
-	vfs::COpenReadFile rfile("BINARYDATA\\AimHist.edt");
+	vfs::OpenReadFile rfile("BINARYDATA\\AimHist.edt");
 	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
@@ -581,7 +581,7 @@ void Loc::ExportAIMPolicy()
 	Loc::Language lang = gs_Lang;
 	#define AIM_HISTORY_LINE_SIZE 400 * 2
 	vfs::String::char_t pPolLine[AIM_HISTORY_LINE_SIZE];
-	vfs::COpenReadFile rfile("BINARYDATA\\AimPol.edt");
+	vfs::OpenReadFile rfile("BINARYDATA\\AimPol.edt");
 	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
@@ -602,7 +602,7 @@ void Loc::ExportAlumniName()
 	Loc::Language lang = gs_Lang;
 	#define AIM_ALUMNI_NAME_SIZE 80 * 2
 	vfs::String::char_t pAlumniName[AIM_ALUMNI_NAME_SIZE];
-	vfs::COpenReadFile rfile("BINARYDATA\\AlumName.edt");
+	vfs::OpenReadFile rfile("BINARYDATA\\AlumName.edt");
 	vfs::ReadableFile_t& file = rfile.file();
 
 	vfs::PropertyContainer props; 
@@ -626,11 +626,11 @@ void Loc::ExportDialogues()
 	#define DIALOGUESIZE		480
 	vfs::String::char_t pDiagLine[DIALOGUESIZE];
 
-	vfs::CVirtualFileSystem::Iterator it = getVFS()->begin(L"MercEdt/*.edt");
+	vfs::VirtualFileSystem::Iterator it = getVFS()->begin(L"MercEdt/*.edt");
 	for(; !it.end(); it.next())
 	{
 		vfs::PropertyContainer props;
-		vfs::COpenReadFile rfile(it.value());
+		vfs::OpenReadFile rfile(it.value());
 		vfs::ReadableFile_t& file = rfile.file();
 
 		std::wstringstream wss;
@@ -665,11 +665,11 @@ void Loc::ExportNPCDialogues()
 	#define CIVQUOTESIZE		320
 	vfs::String::char_t pDiagLine[DIALOGUESIZE];
 
-	vfs::CVirtualFileSystem::Iterator it = getVFS()->begin(L"npcdata/*.edt");
+	vfs::VirtualFileSystem::Iterator it = getVFS()->begin(L"npcdata/*.edt");
 	for(; !it.end(); it.next())
 	{
 		vfs::PropertyContainer props;
-		vfs::COpenReadFile rfile(it.value());
+		vfs::OpenReadFile rfile(it.value());
 		vfs::ReadableFile_t& file = rfile.file();
 
 		vfs::String::str_t const& ws = file.getName().c_wcs();

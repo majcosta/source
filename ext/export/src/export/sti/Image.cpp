@@ -807,7 +807,7 @@ bool ja2xp::CImage::writeSubImageToPNGFile(int i, vfs::WritableFile_t* file, boo
 	
 	if(file)
 	{
-		vfs::COpenWriteFile wfile(file);
+		vfs::OpenWriteFile wfile(file);
 		png::png_set_write_fn(png_ptr,file,user_write_data, user_flush_data);
 		png::png_write_png(png_ptr, info_ptr, png_transforms, NULL);
 
@@ -910,7 +910,7 @@ bool ja2xp::CImage::writeImageToPNGFile(vfs::WritableFile_t* file, bool rgba)
 		
 	if(file)
 	{
-		vfs::COpenWriteFile wfile(file);
+		vfs::OpenWriteFile wfile(file);
 		png::png_set_write_fn(png_ptr,file,user_write_data, user_flush_data);
 		png::png_write_png(png_ptr, info_ptr, png_transforms, NULL);
 		png_write_end(png_ptr,info_ptr);
@@ -984,7 +984,7 @@ bool ja2xp::CImage::WriteAsPNGs(vfs::WritableFile_t* outFile, bool bWriteOffsets
 		for(int i=0; i<m_pRawImage->usNumberOfObjects; ++i)
 		{
 			vfs::Path filename = CreateFileName("", sFileName, i, m_pRawImage->usNumberOfObjects, L"png");
-			vfs::CBufferFile memFile(filename);
+			vfs::BufferFile memFile(filename);
 			vfs::WritableFile_t *pFile = vfs::WritableFile_t::cast(&memFile);
 
 			this->writeSubImageToPNGFile(i, pFile, rgba);
@@ -994,7 +994,7 @@ bool ja2xp::CImage::WriteAsPNGs(vfs::WritableFile_t* outFile, bool bWriteOffsets
 	else
 	{
 		vfs::Path filename = CreateFileName("", sFileName, 0, m_pRawImage->usNumberOfObjects, L"png");
-		vfs::CBufferFile memFile(filename);
+		vfs::BufferFile memFile(filename);
 		vfs::WritableFile_t *pFile = vfs::WritableFile_t::cast(&memFile);
 
 		this->writeImageToPNGFile(pFile, rgba);
@@ -1023,7 +1023,7 @@ bool ja2xp::CImage::WriteAsPNGs(vfs::WritableFile_t* outFile, bool bWriteOffsets
 		}
 		if(write_appdata || bWriteOffsets)
 		{
-			vfs::CBufferFile appDataFile("appdata.xml");
+			vfs::BufferFile appDataFile("appdata.xml");
 			this->writeSTIAppData(write_image, bWriteOffsets, vfs::WritableFile_t::cast(&appDataFile));
 
 			outLib.addFile(vfs::ReadableFile_t::cast(&appDataFile));
@@ -1050,7 +1050,7 @@ bool ja2xp::CImage::WriteAsPNGs(vfs::Path outpath, bool bWriteOffsets, bool rgba
 		{
 			vfs::Path filename = CreateFileName(outpath, sFileName, i, m_pRawImage->usNumberOfObjects, L"png");
 			
-			vfs::COpenWriteFile file(filename, true, true);
+			vfs::OpenWriteFile file(filename, true, true);
 			this->writeSubImageToPNGFile(i, &file.file(), rgba);
 		}
 	}
@@ -1058,7 +1058,7 @@ bool ja2xp::CImage::WriteAsPNGs(vfs::Path outpath, bool bWriteOffsets, bool rgba
 	{
 		vfs::Path filename = CreateFileName("", sFileName, 0, m_pRawImage->usNumberOfObjects, L"png");
 
-		vfs::COpenWriteFile file(filename, true, true);
+		vfs::OpenWriteFile file(filename, true, true);
 		this->writeImageToPNGFile(&file.file(), rgba);
 	}
 	if(m_pRawImage->usNumberOfObjects > 0)
@@ -1084,7 +1084,7 @@ bool ja2xp::CImage::WriteAsPNGs(vfs::Path outpath, bool bWriteOffsets, bool rgba
 		}
 		if(write_appdata || bWriteOffsets)
 		{
-			vfs::COpenWriteFile file(outpath+vfs::Path(L"appdata.xml"), true, true);
+			vfs::OpenWriteFile file(outpath+vfs::Path(L"appdata.xml"), true, true);
 			this->writeSTIAppData(write_image, bWriteOffsets, &file.file());
 		}
 	}

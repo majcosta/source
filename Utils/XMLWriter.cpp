@@ -55,13 +55,13 @@ bool XMLWriter::writeToFile(vfs::Path const& sFileName)
 {
 	try
 	{
-		vfs::COpenWriteFile file(sFileName,true,true);
+		vfs::OpenWriteFile file(sFileName,true,true);
 		return writeToFile( &file.file() );
 	}
 	catch(vfs::Exception& ex)
 	{
 		SGP_ERROR(ex.what());
-		vfs::CFile file(sFileName);
+		vfs::File file(sFileName);
 		if(file.openWrite(true,true))
 		{
 			return writeToFile(vfs::WritableFile_t::cast(&file));
@@ -74,7 +74,7 @@ bool XMLWriter::writeToFile(vfs::WritableFile_t* pFile)
 {
 	try
 	{
-		vfs::COpenWriteFile file(pFile);
+		vfs::OpenWriteFile file(pFile);
 		std::string &str = m_ssBuffer.str();
 		pFile->write(str.c_str(), str.length() * sizeof(std::string::value_type));
 		return true;

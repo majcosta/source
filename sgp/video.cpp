@@ -1945,7 +1945,7 @@ void RefreshScreen(void *DummyVariable)
 
 		try
 		{
-			vfs::COpenWriteFile wfile(FileName,true,true);
+			vfs::OpenWriteFile wfile(FileName,true,true);
 			char head[] = {0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, LOBYTE(SCREEN_WIDTH), HIBYTE(SCREEN_WIDTH), LOBYTE(SCREEN_HEIGHT), HIBYTE(SCREEN_HEIGHT), 0x10, 0};
 			SGP_TRYCATCH_RETHROW(wfile->write(head,18), L"");
 
@@ -3291,7 +3291,7 @@ void RefreshMovieCache( )
 	for ( cnt = 0; cnt < giNumFrames; cnt++ )
 	{
 		sprintf( cFilename, "JA%5.5d.TGA", uiPicNum++ );
-		vfs::COpenWriteFile wfile(cFilename, true, true);
+		vfs::OpenWriteFile wfile(cFilename, true, true);
 		memset(&Header, 0, sizeof(TARGA_HEADER));
 
 		Header.ubTargaType=2;			// Uncompressed 16/24/32 bit
