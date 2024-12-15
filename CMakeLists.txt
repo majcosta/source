@@ -23,13 +23,13 @@ set(usingMsBuild $<STREQUAL:${CMAKE_VS_PLATFORM_NAME},Win32>)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP _CRT_SECURE_NO_DEPRECATE)
-include_directories(Ja2 "ext/VFS/include" Utils TileEngine TacticalAI "ModularizedTacticalAI/include" Tactical Strategic sgp "Ja2/Res" Lua Laptop Multiplayer Editor Console)
+include_directories(Ja2 "ext/bfVFS/include" Utils TileEngine TacticalAI "ModularizedTacticalAI/include" Tactical Strategic sgp "Ja2/Res" Lua Laptop Multiplayer Editor Console)
 
 # external libraries
 add_subdirectory("ext/libpng")
 add_subdirectory("ext/zlib")
-add_subdirectory("ext/VFS")
-target_link_libraries(bfVFS PRIVATE 7z)
+add_subdirectory("ext/bfVFS")
+target_link_libraries(bfvfs PRIVATE bfvfs7z)
 
 # ja2export utility
 add_subdirectory("ext/export/src")

@@ -47,7 +47,7 @@ Lua
 "Winmm.lib"
 "${CMAKE_SOURCE_DIR}/SMACKW32.LIB"
 "${CMAKE_SOURCE_DIR}/binkw32.lib"
-bfVFS
+bfvfs
 "ws2_32.lib"
 Multiplayer
 PARENT_SCOPE)
