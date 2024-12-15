@@ -304,7 +304,7 @@ HWFILE FileOpen( STR strFilename, UINT32 uiOptions, BOOLEAN fDeleteOnClose, STR 
 			// file creation fails, we will stop at a writable profile 
 			// and won't unintentionally mess up a file from another profile
 			vfs::OpenWriteFile open_w( path, true, false, vfs::VirtualFile::SF_STOP_ON_WRITABLE_PROFILE);
-			pFile = &open_w.file();
+			pFile = open_w.file();
 			open_w.release();
 			s_mapFiles[pFile].op = SOperation::WRITE;
 			return (HWFILE)pFile;
@@ -314,13 +314,13 @@ HWFILE FileOpen( STR strFilename, UINT32 uiOptions, BOOLEAN fDeleteOnClose, STR 
 			if(strProfilename && strProfilename[0])
 			{
 				vfs::OpenReadFile open_r(vfs::ReadableFile_t::cast(getVFS()->getFile(path, strProfilename)));
-				pFile = &open_r.file();
+				pFile = open_r.file();
 				open_r.release();
 			}
 			else
 			{
 				vfs::OpenReadFile open_r(path, vfs::VirtualFile::SF_TOP);
-				pFile = &open_r.file();
+				pFile = open_r.file();
 				open_r.release();
 			}
 			s_mapFiles[pFile].op = SOperation::READ;
@@ -456,7 +456,7 @@ BOOLEAN FileReadLine( HWFILE hFile, std::string* pDest )
 		vfs::ReadableFile_t *pRF = vfs::ReadableFile_t::cast( pFile );
 		if ( pRF && pDest )
 		{
-			vfs::ReadLine rl( *pRF, false );
+			vfs::ReadLine rl( pRF );
 			rl.getLine( *pDest );
 			return TRUE;
 		}

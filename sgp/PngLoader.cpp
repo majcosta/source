@@ -524,7 +524,7 @@ public:
 	{
 		// Open and read in the file
 		vfs::OpenReadFile oFile(sFile);
-		_file = &oFile.file();
+		_file = oFile.file();
 		oFile.release();
 	}
 	LoadPngFile(vfs::ReadableFile_t* pFile)
@@ -712,7 +712,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 			// VR r2348 fix - loading .jpc.7z with a single image would cause exception as file was not considered open (by anv)
 			//LoadPngFile lpng(vfs::ReadableFile_t::cast(vFiles[0]));
 			vfs::BufferFile oTempFile("");
-			oTempFile.copyToBuffer(*vfs::ReadableFile_t::cast(vFiles[0]));
+			oTempFile.copyToBuffer(vfs::ReadableFile_t::cast(vFiles[0]));
 			LoadPngFile lpng(vfs::ReadableFile_t::cast(&oTempFile));
 
 			bool bLoadS = lpng.Load();
@@ -763,7 +763,7 @@ bool LoadJPCFileToImage(HIMAGE hImage, UINT16 fContents)
 			try
 			{
 				vfs::BufferFile oTempFile("");
-				oTempFile.copyToBuffer( *vfs::ReadableFile_t::cast(*fit) );
+				oTempFile.copyToBuffer( vfs::ReadableFile_t::cast(*fit) );
 
 //				LoadPngFile lpng( vfs::ReadableFile_t::cast(*fit) );
 				LoadPngFile lpng( vfs::ReadableFile_t::cast(&oTempFile) );
