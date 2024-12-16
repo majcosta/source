@@ -21,11 +21,10 @@ bool CTransferRules::initFromTxtFile(vfs::Path const& sPath)
 	else
 	{
 		// file doesn't exist or VFS not initialized yet
-		vfs::IBaseFile* pFile = new vfs::File(sPath);
-		if(pFile)
+		auto pFile{vfs::OpenReadFile(sPath)};
+		if(pFile->isOpenRead())
 		{
-			bool success = initFromTxtFile(vfs::ReadableFile_t::cast(pFile));
-			delete pFile;
+			bool success = initFromTxtFile(pFile.file());
 			return success;
 		}
 	}
@@ -39,7 +38,7 @@ bool CTransferRules::initFromTxtFile(vfs::ReadableFile_t* pFile)
 		vfs::OpenReadFile rfile(pFile);
 		std::string sBuffer;
 		vfs::UInt32 line_counter = 0;
-		vfs::ReadLine rl(*pFile);
+		vfs::ReadLine rl(pFile);
 		while(rl.getLine(sBuffer))
 		{
 			line_counter++;
