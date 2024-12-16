@@ -7,6 +7,8 @@
 #include "types.h"
 #include "Fileman.h"
 
+#include <cstdarg>
+
 
 struct stringstruct{
 
@@ -55,6 +57,7 @@ extern BOOLEAN fDisableJustForIan;
 // are we allowed to beep on message scroll in tactical
 extern BOOLEAN fOkToBeepNewMessage;
 
+void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, std::va_list& args);
 void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, ...);
 
 // same as screen message, but only display to mapscreen message system, not tactical

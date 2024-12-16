@@ -616,12 +616,16 @@ static auto wchar_t_to_string(STR16 pStringA) -> std::string {
 	return converter.to_bytes(wide);
 }
 
-void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, ...)
+void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, ...) {
+	std::va_list args;
+	ScreenMsg(usColor,ubPriority,pStringA,args);
+}
+
+void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, std::va_list& argptr)
 {
 	//__try
 	//{
 		CHAR16	DestString[512];
-		va_list argptr;
 
 		if( fDisableJustForIan == TRUE )
 		{
