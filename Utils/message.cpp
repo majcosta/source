@@ -21,6 +21,7 @@
 	#include "Game Clock.h"
 	#include "GameSettings.h"
 	#include "sgp_logger.h"
+#include <codecvt>
 
 typedef struct
 {
@@ -607,6 +608,12 @@ void UnHideMessagesDuringNPCDialogue( void )
 
 
 	return;
+}
+
+static auto wchar_t_to_string(STR16 pStringA) -> std::string {
+	std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+	std::wstring wide(pStringA);
+	return converter.to_bytes(wide);
 }
 
 void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, ...)
