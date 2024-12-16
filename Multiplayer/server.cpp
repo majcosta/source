@@ -833,7 +833,7 @@ void AddFilesToSendList()
 {
 	// we cannot just iterate over "*/*" as we would get ALL files and we don't want to send all files
 	// instead we only iterate over the files in the "_MULTIPLAYER" profile
-	vfs::ProfileStack *PS = getVFS()->getProfileStack();
+	const vfs::ProfileStack *PS = getVFS()->getProfileStack();
 	vfs::VirtualProfile *prof = PS->getProfile("_MULTIPLAYER");
 	if(prof != PS->topProfile())
 	{
@@ -845,7 +845,7 @@ void AddFilesToSendList()
 	transferRules.initFromTxtFile("transfer_rules.txt");
 	vfs::IBaseLocation* loc = prof->getLocation("");
 	SGP_THROW_IFFALSE(loc != NULL, "MP profile was successfully created, but the root directory is not included");
-	vfs::IBaseLocation::Iterator it = loc->begin();
+	vfs::IBaseLocation::Iterator it = loc->begin(prof);
 	int i=0;
 	for(; !it.end(); it.next(), i++)
 	{

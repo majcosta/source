@@ -529,15 +529,17 @@ void ja2::mp::InitializeMultiplayerProfile(vfs::Path const& profileRoot)
 			_BS(L"Could not create directory : ") << profileRoot << _BS::wget );
 	}
 
-	// create and initialize a new Multiplayer profile
-	std::unique_ptr<vfs::VirtualProfile> pProf( new vfs::VirtualProfile("_MULTIPLAYER",profileRoot,true) );
+	auto vfs{vfs::VirtualFileSystem::getVFS()};
 
-	if(!vfs_init::initWriteProfile(*pProf))
+	auto PS{vfs->getProfileStack()};
+	// create and initialize a new Multiplayer profile
+	auto pProf { PS->getWriteProfile() };
+
+	if(!vfs_init::initWriteProfile(pProf))
 	{
 		SGP_THROW(_BS(L"Could not initialize client profile") << profileRoot << _BS::wget);
 	}
 
-	vfs::ProfileStack *PS = getVFS()->getProfileStack();
 
 	// remove old Multiplayer profile (if it exists)
 	vfs::VirtualProfile *pOldProf = PS->getProfile("_MULTIPLAYER");
@@ -547,5 +549,5 @@ void ja2::mp::InitializeMultiplayerProfile(vfs::Path const& profileRoot)
 	}
 
 	// add new profile
-	PS->pushProfile(pProf.release());
+	PS->pushProfile(pProf);
 }
