@@ -621,11 +621,11 @@ void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, ...) {
 	ScreenMsg(usColor,ubPriority,pStringA,args);
 }
 
-void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, std::va_list& argptr)
+void ScreenMsg( UINT16 usColor, UINT8 ubPriority, std::string pStringA, std::va_list& argptr)
 {
 	//__try
 	//{
-		CHAR16	DestString[512];
+		char DestString[512];
 
 		if( fDisableJustForIan == TRUE )
 		{
@@ -673,7 +673,7 @@ void ScreenMsg( UINT16 usColor, UINT8 ubPriority, STR16 pStringA, std::va_list& 
 		}
 
 		va_start(argptr, pStringA);
-		vswprintf(DestString, pStringA, argptr);
+		vswprintf(DestString, pStringA.c_str(), argptr);
 		va_end(argptr);
 
 		// pass onto tactical message and mapscreen message
