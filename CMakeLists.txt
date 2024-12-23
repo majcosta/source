@@ -15,6 +15,26 @@ if(ADDRESS_SANITIZER)
 	add_compile_options($<IF:$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>,-fsanitize=address,>)
 endif()
 
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+	add_compile_options(
+		-Wno-c++11-narrowing
+		-Wno-deprecated-non-prototype
+		-Wno-nonportable-include-path
+		-Wno-deprecated-declarations
+		-Wno-return-type-c-linkage
+		-Wno-comment
+		-Wno-microsoft-cast
+		-Wno-shift-negative-value
+		-Wno-invalid-offsetof
+		-Wno-constant-conversion
+		-Wno-microsoft-extra-qualification
+		-Wno-unused-value
+		-Wno-tautological-pointer-compare
+		-Wno-non-pod-varargs
+		-Wno-parentheses-equality
+		-Wno-writable-strings)
+endif()
+
 # whether we are using MSBuild as a generator
 set(usingMsBuild $<STREQUAL:${CMAKE_VS_PLATFORM_NAME},Win32>)
 
