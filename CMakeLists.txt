@@ -16,7 +16,7 @@ if(ADDRESS_SANITIZER)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-	add_compile_options(
+	set(CompilerFlags
 		-Wno-c++11-narrowing
 		-Wno-deprecated-non-prototype
 		-Wno-nonportable-include-path
@@ -32,8 +32,28 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 		-Wno-tautological-pointer-compare
 		-Wno-non-pod-varargs
 		-Wno-parentheses-equality
-		-Wno-writable-strings)
+		-Wno-writable-strings
+	)
+else()
+	set(CompilerFlags
+		/wd4838
+		/wd4996
+		/wd4996
+		/wd4996
+		/wd4190
+		/wd4068
+		/wd4293
+		/wd4200
+		/wd4305
+		/wd4309
+		/wd4189
+		/wd4018
+		/wd4553
+		/wd4996
+		/wd4244
+	)
 endif()
+add_compile_options(${CompilerFlags})
 
 # whether we are using MSBuild as a generator
 set(usingMsBuild $<STREQUAL:${CMAKE_VS_PLATFORM_NAME},Win32>)
