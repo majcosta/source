@@ -1,4 +1,4 @@
-set(ModularizedTacticalAISrc
+add_library(ModularizedTacticalAI
 "${CMAKE_CURRENT_SOURCE_DIR}/src/LegacyArmedVehiclePlan.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/src/AbstractPlanFactory.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/src/CrowPlan.cpp"
@@ -11,4 +11,4 @@ set(ModularizedTacticalAISrc
 "${CMAKE_CURRENT_SOURCE_DIR}/src/Plan.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/src/PlanFactoryLibrary.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/src/PlanList.cpp"
-PARENT_SCOPE)
+)

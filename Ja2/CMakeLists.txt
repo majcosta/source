@@ -52,4 +52,5 @@ bfVFS
 Multiplayer
 sgp
 TileEngine
+ModularizedTacticalAI
 PARENT_SCOPE)

@@ -58,6 +58,7 @@ add_subdirectory(Lua)
 add_subdirectory(Multiplayer)
 add_subdirectory(sgp)
 add_subdirectory(TileEngine)
+add_subdirectory(ModularizedTacticalAI)
 
 # static libraries whose source files, header files or header files included
 # by header files rely on Application and Language preprocessor definitions, and
@@ -70,7 +71,6 @@ Laptop
 Editor
 Console
 Tactical
-ModularizedTacticalAI
 i18n
 )
 foreach(lib IN LISTS Ja2_Libs)
