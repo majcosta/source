@@ -500,7 +500,7 @@ void SetSSA(void)
 	}
 
 	// check sector file
-	sprintf(SectorName, "%s%s", pVertStrings[gWorldSectorY], pHortStrings[gWorldSectorX]);
+	sprintf(SectorName, "%s%s", static_cast<char *>(pVertStrings[gWorldSectorY]), static_cast<char* >(pHortStrings[gWorldSectorX]));
 
 	// determine underground
 	if (gbWorldSectorZ > 0)

@@ -107,13 +107,13 @@ void CIniReader::Clear()
 
 int CIniReader::ReadInteger(const STR8	szSection, const STR8	szKey, int iDefaultValue)
 {
-	return (int)(m_oProps.getIntProperty(szSection, szKey, iDefaultValue));
+	return (int)(m_oProps.getIntProperty(vfs::String{szSection}, vfs::String{szKey}, iDefaultValue));
 }
 
 
 int CIniReader::ReadInteger(const STR8 szSection, const STR8 szKey, int defaultValue, int minValue, int maxValue)
 {
-	int iniValueReadFromFile = (int)(m_oProps.getIntProperty(szSection, szKey, defaultValue));
+	int iniValueReadFromFile = (int)(m_oProps.getIntProperty(vfs::String{szSection}, vfs::String{szKey}, defaultValue));
 	//AssertGE(iniValueReadFromFile, minValue);
 	//AssertLE(iniValueReadFromFile, maxValue);
 	if (iniValueReadFromFile < minValue)

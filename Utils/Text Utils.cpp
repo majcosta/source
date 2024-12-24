@@ -106,7 +106,7 @@ FLOAT GetWeightBasedOnMetricOption( UINT32 uiObjectWeight )
 
 static inline STR8 Trim(STR8 &p) { 
 	while(isspace(*p)) *p++ = 0; 
-	STR8 e = p + strlen(p) - 1;
+	const STR8 e = p + strlen(p) - 1;
 	while (e > p && isspace(*e)) *e-- = 0;
 	return p;
 }

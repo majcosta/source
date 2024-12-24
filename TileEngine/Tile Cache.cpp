@@ -17,7 +17,7 @@ TILE_CACHE_ELEMENT		*gpTileCache = NULL;
 TILE_CACHE_STRUCT			*gpTileCacheStructInfo = NULL;
 
 
-
+STR a;
 BOOLEAN InitTileCache(	)
 {
 	UINT32				cnt;
@@ -360,10 +360,10 @@ void GetRootName( STR8 pDestStr, const STR8 pSrcStr )
 	}
 
 	// Now remove extension...
-	cEndOfName = strchr( pDestStr, '.' );
+	cEndOfName = strchr( static_cast<const char *>(pDestStr), '.' );
 	if (cEndOfName != NULL)
 	{
-		*cEndOfName = '\0';
+		strncpy(cEndOfName, '\0', 1);
 	}
 
 }
