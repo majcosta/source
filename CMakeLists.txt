@@ -57,12 +57,12 @@ add_subdirectory("ext/export/src")
 add_subdirectory(Lua)
 add_subdirectory(Multiplayer)
 add_subdirectory(sgp)
+add_subdirectory(TileEngine)
 
 # static libraries whose source files, header files or header files included
 # by header files rely on Application and Language preprocessor definitions, and
 # therefore need to be compiled multiple times. Very Bad.
 set(Ja2_Libs
-TileEngine
 TacticalAI
 Utils
 Strategic

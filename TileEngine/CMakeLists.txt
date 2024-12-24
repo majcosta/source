@@ -1,4 +1,4 @@
-set(TileEngineSrc
+add_library(TileEngine
 "${CMAKE_CURRENT_SOURCE_DIR}/Ambient Control.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/Buildings.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/environment.cpp"
@@ -36,4 +36,4 @@ set(TileEngineSrc
 "${CMAKE_CURRENT_SOURCE_DIR}/worlddef.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/worldman.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/XML_ExplosionData.cpp"
-PARENT_SCOPE)
+)

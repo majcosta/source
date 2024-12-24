@@ -51,4 +51,5 @@ bfVFS
 "ws2_32.lib"
 Multiplayer
 sgp
+TileEngine
 PARENT_SCOPE)
