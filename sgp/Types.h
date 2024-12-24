@@ -21,6 +21,7 @@
 
 
 #include <wchar.h>			// for wide-character strings
+#include <StringWrapper.h>
 
 // *** SIR-TECH TYPE DEFINITIONS ***
 
@@ -46,8 +47,9 @@ typedef double			DOUBLE;
 // strings
 typedef char					CHAR8;
 typedef wchar_t					CHAR16;
-typedef CHAR8 * 				STR;
-typedef CHAR8 *					STR8;
+
+using STR = Wrappers::StringWrapper<char>;
+using STR8 = Wrappers::StringWrapper<char>;
 typedef CHAR16 *				STR16;
 // flags (individual bits used)
 typedef unsigned char		FLAGS8;
