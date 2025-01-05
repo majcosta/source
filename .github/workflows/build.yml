@@ -11,6 +11,9 @@ env:
 
 jobs:
   compile:
+    strategy:
+      matrix:
+        app: [JA2, JA2MAPEDITOR, JA2UB, JA2UBMAPEDITOR]
     runs-on: windows-latest
     steps:
       - name: Debug
@@ -37,10 +40,7 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x86
-      - name: Configure build
+      - name: Configure and build
         run: |
-          cmake -S . -B buildCI -GNinja -DCMAKE_BUILD_TYPE=Release
-
-      - name: Build
-        run: |
+          cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Release -DApplications=${{ matrix.app }}
           cmake --build build/ -- -v
