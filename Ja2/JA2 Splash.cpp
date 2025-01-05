@@ -70,7 +70,7 @@ if( g_lang == i18n::Lang::en ) {
 	GetVideoSurface( &hVSurface, uiLogoID );
 	BltVideoSurfaceToVideoSurface( ghFrameBuffer, hVSurface, 0, iScreenWidthOffset, iScreenHeightOffset, 0, NULL );
 	DeleteVideoSurfaceFromIndex( uiLogoID );
-} // ENGLISH
+}
 
 	InvalidateScreen();
 	RefreshScreen( NULL );

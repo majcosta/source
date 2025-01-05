@@ -37,11 +37,6 @@
 //WANNE - BMP: DONE!
 typedef struct
 {
-//SB: unify structure for all versions
-// #if defined( CRIPPLED_VERSION ) || defined( RUSSIAN )
-// 	UINT8		ubIdentifier[4];
-// #endif
-
 	UINT16	fFlags;
 
 	// conditions
@@ -73,11 +68,7 @@ typedef struct
 	UINT16	usGoToGridno;
 	INT16		sActionData;		// special action value	
 
-//SB: unify structure for all versions
-//#if !defined( CRIPPLED_VERSION ) && !defined( RUSSIAN )
 	UINT8		ubUnused[4];
-//#endif
-
 } _old_NPCQuoteInfo;																										// 32 bytes
 
 //dnl ch46 021009
