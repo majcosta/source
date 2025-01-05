@@ -37,7 +37,7 @@ jobs:
           
           full_release='${{ ( github.repository == '1dot13/source' && github.ref_name == 'master' ) || startsWith(github.ref, 'refs/tags/v') }}'
           
-          if [[ '${{ inputs.build_all_languages }}' == 'true' || ( '${{ inputs.build_all_languages }}' == '' && "$full_release" == 'true' ) ]]
+          if [[ '${{ inputs.build_all_languages }}' == 'true' || "$full_release" == 'true' ]]
           then
             languages_json_array='["Chinese", "German", "English", "French", "Polish", "Italian", "Dutch", "Russian"]';
           else
@@ -46,7 +46,7 @@ jobs:
           fi
           echo "languages_json_array=$languages_json_array" >> $GITHUB_OUTPUT
           
-          if [[ '${{ inputs.assemble_release }}' == 'true' || ( '${{ inputs.assemble_release }}' == '' && "$full_release" == 'true' ) ]]
+          if [[ '${{ inputs.assemble_release }}' == 'true' || "$full_release" == 'true' ]]
           then
             assemble_release='true'
           else
