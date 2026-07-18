@@ -44,11 +44,9 @@
 	#include "editscreen.h"
 	#include "Editor Taskbar Utils.h"
 
-#ifdef JA2EDITOR
 	#include "Summary Info.h"
 	#include "Button Defines.h"
 	#include "Animation Data.h"
-#endif
 
 
 #define	SET_MOVEMENTCOST( a, b, c, d )				( ( gubWorldMovementCosts[ a ][ b ][ c ] < d ) ? ( gubWorldMovementCosts[ a ][ b ][ c ] = d ) : 0 );
@@ -2401,7 +2399,6 @@ void InitLoadedWorld( )
 	SetBlueFlagFlags();
 }
 
-#ifdef JA2EDITOR
 //This is a specialty function that is very similar to LoadWorld, except that it
 //doesn't actually load the world, it instead evaluates the map and generates summary
 //information for use within the summary editor.  The header is defined in Summary Info.h,
@@ -2801,7 +2798,6 @@ BOOLEAN EvaluateWorld(STR8 pSector, UINT8 ubLevel)
 	WORLD_COLS = iCurColSize;
 	return(TRUE);
 }
-#endif
 
 extern UINT8 GetCurrentSummaryVersion();
 extern void LoadShadeTablesFromTextFile();

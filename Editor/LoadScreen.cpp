@@ -1,7 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
-
 	#include <stdio.h>
 	#include "Font Control.h" 
 	#include "renderworld.h"
@@ -1263,25 +1261,3 @@ BOOLEAN ExternalSaveMap(STR16 szFilename)
 	return(TRUE);
 }
 
-#else //non-editor version
-
-#include "types.h"
-#include "screenids.h"
-
-UINT32 LoadSaveScreenInit()
-{
-	return TRUE ;
-}
-
-UINT32	LoadSaveScreenHandle( )
-{
-	//If this screen ever gets set, then this is a bad thing -- endless loop
-	return ERROR_SCREEN ;
-}
-
-UINT32 LoadSaveScreenShutdown( )
-{
-	return TRUE ;
-}
-
-#endif
