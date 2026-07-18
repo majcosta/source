@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <stdio.h>
 	#include "types.h"
@@ -1062,4 +1061,3 @@ void ProcessEditorRendering()
 		RenderButtonsFastHelp();
 }
 
-#endif

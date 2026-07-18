@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <windows.h>
 	#include "tiledef.h"
@@ -3868,7 +3867,6 @@ void PasteMercPlacement( INT32 iMapIndex )
 }
 
 
-#endif
 
 
 

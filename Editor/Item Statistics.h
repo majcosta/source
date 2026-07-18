@@ -57,7 +57,6 @@ enum
 	NUM_ACTIONITEMS
 };
 
-#ifdef JA2EDITOR
 
 //#include "Item Types.h"
 
@@ -114,5 +113,4 @@ extern void SetOwnershipGroup( UINT8 ubNewGroup );
 
 //extern CHAR16 gszActionItemDesc[ NUM_ACTIONITEMS ][ 30 ];
 
-#endif
 #endif

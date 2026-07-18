@@ -2,7 +2,6 @@
 
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "tiledef.h"
 	#include "vsurface.h"
@@ -1688,7 +1687,6 @@ BOOLEAN DisplayWindowFunc( DisplayList *pNode, INT16 iTopCutOff, INT16 iBottomCu
 
 
 
-#endif
 
 
 

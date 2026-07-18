@@ -1,7 +1,6 @@
 	#include "builddefines.h"
 
 
-#ifdef JA2EDITOR
 
 	#include "worlddef.h"
 	#include "worldman.h"
@@ -1884,6 +1883,5 @@ void EliminateObjectLayerRedundancy()
 }
 
 
-#endif //JA2EDITOR
 
 

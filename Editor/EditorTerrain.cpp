@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <windows.h>
 	#include "tiledef.h"
@@ -279,7 +278,6 @@ void TerrainFill( INT32 iMapIndex )
 }
 
 
-#endif
 
 
 

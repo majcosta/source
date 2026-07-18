@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __EDITORITEMS_H
 #define __EDITORITEMS_H
 
@@ -61,5 +60,4 @@ typedef struct TAG_ITEM_POOL ITEM_POOL;
 BOOLEAN ItemPoolListMove(INT32 iOldGridNo, INT32 iNewGridNo, ITEM_POOL *pItemPool);
 BOOLEAN DeleteItemNode(INT32 iMapIndex);
 
-#endif
 #endif

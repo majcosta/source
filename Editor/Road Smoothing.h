@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 #ifndef __ROAD_SMOOTHING_H
 #define __ROAD_SMOOTHING_H
@@ -61,4 +60,3 @@ void InitializeRoadMacros();
 
 #endif
 
-#endif

@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <windows.h>
 	#include "tiledef.h"
@@ -1704,4 +1703,3 @@ BOOLEAN DeleteItemNode(INT32 iMapIndex)
 	return(FALSE);
 }
 
-#endif

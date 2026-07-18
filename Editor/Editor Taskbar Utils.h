@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __EDITOR_TASKBAR_UTILS_H
 #define __EDITOR_TASKBAR_UTILS_H
 
@@ -66,5 +65,4 @@ extern UINT32 guiMercInvPanelBuffers[9];
 extern UINT32 guiMercTempBuffer;
 extern INT32	giEditMercImage[2];
 
-#endif
 #endif

@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "vobject.h"
 	#include "video.h"
@@ -152,7 +151,6 @@ void MsgBoxCnclClkCallback( GUI_BUTTON *butn, INT32 reason )
 //----------------------------------------------------------------------------------------------
 
 
-#endif
 
 
 

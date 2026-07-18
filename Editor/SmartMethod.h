@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __SMARTMETHOD_H
 #define __SMARTMETHOD_H
 
@@ -38,7 +37,6 @@ extern UINT8 gubWindowUIValue;
 extern UINT8 gubWallUIValue;
 extern UINT8 gubBrokenWallUIValue;
 
-#endif
 #endif
 
 

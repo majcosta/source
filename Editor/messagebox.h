@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __MESSAGEBOX_H
 #define __MESSAGEBOX_H
 
@@ -41,7 +40,6 @@ void RemoveMessageBox();
 //		...
 //	}
 
-#endif
 #endif
 
 

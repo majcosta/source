@@ -1,7 +1,6 @@
 	#include "builddefines.h"
 
 
-#ifdef JA2EDITOR
 
 	#include "types.h"
 	#include "Editor Modes.h"
@@ -398,4 +397,3 @@ void SetEditorSmoothingMode( UINT8 ubNewMode )
 	gMapInformation.ubEditorSmoothingType = ubNewMode;
 }
 
-#endif

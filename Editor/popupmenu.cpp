@@ -12,7 +12,6 @@
 
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "tiledef.h"
 	#include "sysutil.h"
@@ -486,7 +485,6 @@ BOOLEAN ProcessPopupMenuIfActive( )
 	return TRUE;
 }
 
-#endif
 
 
 

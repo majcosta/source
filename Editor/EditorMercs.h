@@ -276,7 +276,6 @@ enum
 #define CIV_GROUP_HOSTILE 3
 
 
-#ifdef JA2EDITOR
 
 #ifndef __EDITORMERCS_H
 #define __EDITORMERCS_H
@@ -429,7 +428,6 @@ void KillDetailedPlacementForMerc();
 void CopyMercPlacement( INT32 iMapIndex );
 void PasteMercPlacement( INT32 iMapIndex );
 
-#endif
 #endif
 
 

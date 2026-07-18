@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __SMOOTH_H
 #define __SMOOTH_H
 
@@ -24,7 +23,6 @@ void SmoothAllTerrainTypeRadius( INT32 iMapIndex, UINT8 ubRadius, BOOLEAN fForce
 void SmoothExitGrid(INT32 GridNo, UINT16 *piNewTile, BOOLEAN fForceSmooth );
 void SmoothExitGridRadius( INT32 sMapIndex, UINT8 ubRadius );
 
-#endif
 #endif
 
 

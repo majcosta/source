@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "worlddef.h"	//LEVELNODE def
 	#include "worldman.h"	//ReplaceStructIndex
@@ -613,7 +612,6 @@ void PasteSmartBrokenWall( INT32 iMapIndex )
 	}
 }
 
-#endif
 
 
 

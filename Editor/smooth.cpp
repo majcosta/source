@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "stdlib.h"
 	#include "FileMan.h"
@@ -718,7 +717,6 @@ void SmoothWaterTerrain( INT32 GridNo, INT32 origType, UINT16 *piNewTile, BOOLEA
 }
 
 
-#endif
 
 
 

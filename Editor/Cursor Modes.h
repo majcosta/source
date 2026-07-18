@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __CURSOR_MODES_H
 #define __CURSOR_MODES_H
 
@@ -40,4 +39,3 @@ extern BOOLEAN gfCurrentSelectionWithRightButton;
 
 #endif
 
-#endif

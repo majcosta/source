@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __NEWSMOOTH_H
 #define __NEWSMOOTH_H
 
@@ -18,7 +17,6 @@ void AddCave( INT32 iMapIndex, UINT16 usIndex );
 
 void AnalyseCaveMapForStructureInfo();
 
-#endif
 #endif
 
 

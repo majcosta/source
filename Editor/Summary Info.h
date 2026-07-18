@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __SUMMARY_INFO_H
 #define __SUMMARY_INFO_H
 
@@ -158,4 +157,3 @@ void ApologizeOverrideAndForceUpdateEverything();
 void ClearSummaryInfo();
 
 #endif 
-#endif

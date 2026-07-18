@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __EDITORDEFINES_H
 #define __EDITORDEFINES_H
 
@@ -261,7 +260,6 @@ extern BOOLEAN gfShowItemStatsPanel;
 #define	MERCPANEL_X						(iScreenWidthOffset + 177)
 #define MERCPANEL_Y						(2 * iScreenHeightOffset + 361)
 
-#endif
 #endif
 
 

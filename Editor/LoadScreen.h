@@ -3,7 +3,6 @@
 
 #define FILENAME_BUFLEN (30 + 4 + 1)//dnl ch39 190909 +4 is for ".dat", +1 is for '\0' //dnl ch81 021213
 
-#ifdef JA2EDITOR
 
 #ifndef _JA2_LOAD_SCREEN_
 #define _JA2_LOAD_SCREEN_
@@ -53,5 +52,4 @@ extern CHAR16 gzErrorCatchString[ 256 ];
 extern CHAR16 gzFilename[FILENAME_BUFLEN];
 extern CHAR8 gzProfileName[FILENAME_BUFLEN];
 
-#endif
 #endif

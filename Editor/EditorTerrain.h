@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __EDITORTERRAIN_H
 #define __EDITORTERRAIN_H
 
@@ -34,7 +33,6 @@ void TerrainFill( INT32 iMapIndex );
 
 #endif
 
-#endif
 
 
 

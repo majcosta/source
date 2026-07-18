@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __EDITORBUILDINGS_H
 #define __EDITORBUILDINGS_H
 
@@ -61,7 +60,6 @@ extern UINT16 usCurrentMode;
 
 #endif
 
-#endif
 
 
 

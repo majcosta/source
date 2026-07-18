@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <memory.h>
 	#include <stdio.h>
@@ -1818,4 +1817,3 @@ void ReEvaluateAttachmentStatii()
 }
 
 
-#endif

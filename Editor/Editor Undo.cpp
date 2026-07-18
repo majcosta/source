@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "worlddef.h"
 	#include "worldman.h"
@@ -1103,4 +1102,3 @@ void MergeItemPoolInUndoList(INT32 iMapIndex, ITEM_POOL *pItemPool)
 	}
 }
 
-#endif

@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "types.h"
 	#include "Cursor Modes.h"
@@ -458,4 +457,3 @@ void RemoveBuildingLayout()
 	}
 }
 
-#endif

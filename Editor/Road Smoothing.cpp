@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "types.h"
 	#include "Road Smoothing.h"
@@ -475,4 +474,3 @@ void ReplaceObsoleteRoads()
 	}
 }
 
-#endif

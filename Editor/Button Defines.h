@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __BUTTON_DEFINES_H
 #define __BUTTON_DEFINES_H
 
@@ -268,5 +267,4 @@ enum
 #define FIRST_MERCS_SCHEDULE_BUTTON					MERCS_SCHEDULE_ACTION1
 #define LAST_MERCS_SCHEDULE_BUTTON					MERCS_SCHEDULE_CLEAR
 
-#endif
 #endif

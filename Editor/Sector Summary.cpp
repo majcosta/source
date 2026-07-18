@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 
 	#include <stdio.h>
@@ -3210,7 +3209,6 @@ void ClearSummaryInfo()
 	}
 }
 
-#endif
 
 
 

@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef EDITSCREEN_H
 #define EDITSCREEN_H
 
@@ -87,7 +86,6 @@ extern BOOLEAN fEditorCreateItemFromKeyboard;
 extern UINT16 usEditorTempItem;
 extern UINT16 gusSavedLightLevel;//dnl ch80 011213
 
-#endif
 #endif
 
 

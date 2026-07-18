@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __SECTOR_SUMMARY_H
 #define __SECTOR_SUMMARY_H
 
@@ -34,5 +33,4 @@ extern UINT8 GetCurrentSummaryVersion();
 void GetSectorFromFileName(STR16 szFileName, INT16& sSectorX, INT16& sSectorY, INT8& bSectorZ, BOOLEAN& fAltMap);//dnl ch31 140909
 void ResetCustomFileSectorSummary(void);//dnl ch30 150909
 
-#endif
 #endif

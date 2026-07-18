@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "types.h"
 	#include "Button System.h"
@@ -1381,4 +1380,3 @@ void ItemStatsDeleteCallback( GUI_BUTTON *btn, INT32 reason )
 }
 
 
-#endif

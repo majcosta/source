@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <stdlib.h>
 	#include "worlddef.h"	//for LEVELNODE def
@@ -460,4 +459,3 @@ UINT16 GetHorizontalWallClass( INT32 iMapIndex )
 	return 0xffff;
 }
 
-#endif

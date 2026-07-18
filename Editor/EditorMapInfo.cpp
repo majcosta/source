@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <windows.h>
 	#include "tiledef.h"
@@ -336,7 +335,6 @@ void ChangeLightDefault( INT8 bLightType )
 	ClickEditorButton( MAPINFO_PRIMETIME_LIGHT + gbDefaultLightType );
 }
 
-#endif
 
 
 

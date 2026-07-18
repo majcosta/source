@@ -1,6 +1,5 @@
 #include "builddefines.h"
 
-#ifdef JA2EDITOR
 #ifndef __EDITOR_UNDO_H
 #define __EDITOR_UNDO_H
 
@@ -26,5 +25,4 @@ void AddItemPoolGraphic(ITEM_POOL *pItemPoolHead);
 void UndoItemPoolGraphicInUndoList(void);
 void MergeItemPoolInUndoList(INT32 iMapIndex, ITEM_POOL *pItemPool);
 
-#endif
 #endif

@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include "tiledef.h"
 	#include "edit_sys.h"
@@ -808,4 +807,3 @@ void ExtractAndUpdateBuildingInfo()
 	SetActiveField( 0 );
 }
 
-#endif

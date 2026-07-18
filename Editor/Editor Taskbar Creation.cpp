@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	//sgp
 	#include "Button System.h"
@@ -831,4 +830,3 @@ void CreateEditorTaskbarInternal()
 }
 
 
-#endif

@@ -1,6 +1,5 @@
 	#include "builddefines.h"
 
-#ifdef JA2EDITOR
 
 	#include <stdlib.h>
 	#include "tiledef.h"
@@ -1187,7 +1186,6 @@ void AnalyseCaveMapForStructureInfo()
 	}
 }
 
-#endif
 
 
 
