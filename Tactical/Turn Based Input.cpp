@@ -6316,7 +6316,6 @@ void EscapeUILock( )
 	UIHandleLUIEndLock( NULL );
 }
 
-#ifdef JA2BETAVERSION
 void ToggleMapEdgepoints()
 {
 #ifdef JA2EDITOR
@@ -6332,7 +6331,6 @@ void ToggleMapEdgepoints()
 	SetRenderFlags( RENDER_FLAG_FULL );
 #endif
 }
-#endif
 
 #ifdef JA2BETAVERSION
 BOOLEAN gfMercsNeverQuit = FALSE;

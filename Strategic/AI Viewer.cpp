@@ -33,6 +33,11 @@
 	#include "WordWrap.h"
 	#include "Town Militia.h"	// added by Flugente
 
+BOOLEAN gfRenderMap;
+INT16 gsHiSectorX = 0;
+INT16 gsHiSectorY = 0;
+INT16 gsSelSectorX = 0, gsSelSectorY = 0;
+
 #ifdef JA2BETAVERSION
 
 #define VIEWER_LEFT			15
@@ -170,7 +175,6 @@ BOOLEAN gfViewerEntry;
 BOOLEAN gfExitViewer;
 
 BOOLEAN gfRenderViewer;
-BOOLEAN gfRenderMap;
 
 BOOLEAN gfViewEnemies = TRUE;
 INT8		gbViewLevel = 0;
@@ -189,12 +193,6 @@ BOOLEAN gfOverrideSector = FALSE;
 UINT32 guiLastTime;
 
 INT32 giSaveTCMode; //time compression mode;
-
-//The sector coordinates of the mouse position (yellow)
-INT16 gsHiSectorX = 0;
-INT16 gsHiSectorY = 0;
-//The sector coordinates of the selected sector (red)
-INT16 gsSelSectorX = 0, gsSelSectorY = 0;
 
 INT32 iViewerButton[ NUM_VIEWER_BUTTONS ];
 
