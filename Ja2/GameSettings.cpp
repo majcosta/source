@@ -4299,22 +4299,6 @@ void FreeGameExternalOptions()
 {
 }
 
-void CDromEjectionErrorMessageBoxCallBack( UINT8 bExitValue )
-{
-	if( bExitValue == MSG_BOX_RETURN_OK )
-	{
-		SetOptionsPreviousScreen(GAME_SCREEN);
-
-		//if we are in a game, save the game
-		if( gTacticalStatus.fHasAGameBeenStarted )
-		{
-			SaveGame( SAVE__ERROR_NUM, pMessageStrings[ MSG_CDROM_SAVE ] );
-		}
-
- 		//quit the game
-		gfProgramIsRunning = FALSE;
-	}
-}
 void DisplayGameSettings( )
 {
 	//Display the version number
