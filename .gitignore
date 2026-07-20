@@ -1,3 +1,6 @@
+cppcheck/report
+cppcheck/build
+
 # CLion
 /.idea/
 /cmake-build-*/

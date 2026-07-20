@@ -979,31 +979,37 @@ UINT32 DemoExitScreenShutdown(void)
 
 #ifndef JA2EDITOR
 
+// cppcheck-suppress unusedFunction
 UINT32 LoadSaveScreenInit()
 {
 	return TRUE;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32 LoadSaveScreenHandle()
 {
 	return TRUE;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32 LoadSaveScreenShutdown()
 {
 	return TRUE;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32 EditScreenInit()
 {
 	return TRUE;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32 EditScreenHandle()
 {
 	return TRUE;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32 EditScreenShutdown()
 {
 	return TRUE;
