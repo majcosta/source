@@ -32,6 +32,7 @@ if(MSVC)
   add_compile_options("/wd4838") # silence implicit narrowing conversion warnings
 # add_compile_options("/w14061")
 # add_compile_options("/w14062")
+  add_compile_options("/w14101" "/w14189" "/w14505") # unreferenced variables
 endif()
 
 # whether we are using MSBuild as a generator
