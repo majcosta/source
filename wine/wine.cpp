@@ -3,6 +3,7 @@
 #include "wine.h"
 
 
+// cppcheck-suppress unusedFunction
 BOOL wine_add_dll_overrides()
 {
     BOOL dd = wine_add_dll_override(L"ddraw");

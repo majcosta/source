@@ -1,0 +1,2 @@
+*:ext/**
+unusedFunction:Ja2/TimeLogging.cpp

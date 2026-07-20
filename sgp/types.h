@@ -140,6 +140,7 @@ typedef	VECTOR4	COLOR;			// rgba color array
 #include <vfs/Aspects/vfs_settings.h>
 #include <vfs/Core/vfs_string.h>
 
+// cppcheck-suppress unusedFunction
 inline void convert_string(std::wstring const& str_in, std::string &str_out)
 {
 	if(vfs::Settings::getUseUnicode())
@@ -152,6 +153,7 @@ inline void convert_string(std::wstring const& str_in, std::string &str_out)
 	}
 }
 
+// cppcheck-suppress unusedFunction
 inline void convert_string(std::string const& str_in, std::wstring &str_out)
 {
 	if(vfs::Settings::getUseUnicode())
