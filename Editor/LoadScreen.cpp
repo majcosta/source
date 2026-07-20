@@ -1268,17 +1268,20 @@ BOOLEAN ExternalSaveMap(STR16 szFilename)
 #include "types.h"
 #include "screenids.h"
 
+// cppcheck-suppress unusedFunction
 UINT32 LoadSaveScreenInit()
 {
 	return TRUE ;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32	LoadSaveScreenHandle( )
 {
 	//If this screen ever gets set, then this is a bad thing -- endless loop
 	return ERROR_SCREEN ;
 }
 
+// cppcheck-suppress unusedFunction
 UINT32 LoadSaveScreenShutdown( )
 {
 	return TRUE ;
