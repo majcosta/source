@@ -4645,6 +4645,10 @@ void SetWorldSize(INT32 nWorldRows, INT32 nWorldCols)
 	dirDelta[5]= WORLD_ROWS-1;
 	dirDelta[7]= -WORLD_ROWS-1;
 
+	gsFullTileDirections[0] = -1;
+	gsFullTileDirections[1] = static_cast<INT16>(-WORLD_COLS - 1);
+	gsFullTileDirections[2] = static_cast<INT16>(-WORLD_COLS);
+
 	DirIncrementer[0] = -WORLD_ROWS;
 	DirIncrementer[1] = 1-WORLD_ROWS;
 	DirIncrementer[3] = 1+WORLD_ROWS;
