@@ -14,7 +14,7 @@ BUILDING gBuildings[ MAX_BUILDINGS ];
 UINT8 gubNumberOfBuildings;
 
 #ifdef ROOF_DEBUG
-	extern INT16 gsCoverValue[WORLD_MAX];
+	extern INT16 * gsCoverValue;
 	#include "video.h"
 	#include "renderworld.h"
 #endif
