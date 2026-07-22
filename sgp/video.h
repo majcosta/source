@@ -8,7 +8,6 @@
 #include "local.h"
 #include "DEBUG.H"
 #include "types.h"
-#include "DirectDraw Calls.h"
 #include "vsurface.h"
 
 #define BUFFER_READY			0x00

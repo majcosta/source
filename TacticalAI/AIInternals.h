@@ -3,7 +3,6 @@
 #include "Animation Control.h"
 #include "Overhead.h"
 #include "random.h"
-#include "Points.h"
 
 #include <iostream>
 #include <iomanip>
