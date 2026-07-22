@@ -495,7 +495,10 @@ BOOLEAN FileWrite( HWFILE hFile, const void* pDest, UINT32 uiBytesToWrite, UINT3
 {
 	if(uiBytesToWrite == 0)//dnl ch38 110909
 	{
-		*puiBytesWritten = 0;
+		if ( puiBytesWritten )
+		{
+			*puiBytesWritten = 0;
+		}
 		return(TRUE);
 	}
 	vfs::IBaseFile *pFile = (vfs::IBaseFile*)hFile;
