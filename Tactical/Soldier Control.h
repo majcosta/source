@@ -18,7 +18,6 @@
 #include "worlddef.h"
 #include <vector>
 #include <iterator>
-#include "GameSettings.h"	// added by Flugente
 #include "Disease.h"		// added by Flugente
 #include <functional>
 

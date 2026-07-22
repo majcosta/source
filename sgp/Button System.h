@@ -9,8 +9,6 @@
 
 #include "vobject.h" 
 #include "mousesystem.h"
-#include "soundman.h"
-#include "Button Sound Control.h"
 
 
 // Moved here from Button System.c by DB 99/01/07
