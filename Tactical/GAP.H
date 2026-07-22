@@ -2,6 +2,7 @@
 #define __GAP_H
 
 #include "faces.h"
+#include "soundman.h"
 
 typedef UINT8		AudioSample8;
 typedef INT16		AudioSample16;

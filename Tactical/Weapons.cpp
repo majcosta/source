@@ -52,6 +52,7 @@
 // anv: for taunts on miss
 #include "Civ Quotes.h"
 #include "GameInitOptionsScreen.h"
+#include "soundman.h"
 
 
 //forward declarations of common classes to eliminate includes

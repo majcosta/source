@@ -6,6 +6,8 @@
 	#include "Items.h"
 	#include "Rotting Corpses.h"
 	#include "Soldier Add.h"
+#include "Init.h"
+#include "Points.h"
 
 //forward declarations of common classes to eliminate includes
 class OBJECTTYPE;

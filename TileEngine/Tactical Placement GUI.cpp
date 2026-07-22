@@ -36,6 +36,8 @@
 #include "merc entering.h"
 #include "CampaignStats.h"		// added by Flugente
 #include "Rebel Command.h"
+#include "GameSettings.h"
+#include "random.h"
 
 typedef struct MERCPLACEMENT
 {

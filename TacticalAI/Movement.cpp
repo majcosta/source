@@ -15,6 +15,8 @@
 	#include "Render Fun.h"
 	#include "Soldier Functions.h"		// added by Flugente
 #include "connect.h"
+#include "Init.h"
+#include "Points.h"
 //forward declarations of common classes to eliminate includes
 class OBJECTTYPE;
 class SOLDIERTYPE;

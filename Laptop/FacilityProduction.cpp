@@ -17,6 +17,8 @@
 #include "Strategic Town Loyalty.h"
 #include "strategic.h"
 #include "BaseTable.h"
+#include "Campaign Types.h"
+#include "random.h"
 
 // Every member below is specialised for each table, and nothing else defines them.
 // The specialisations have to be visible before the first use instantiates one.

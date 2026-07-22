@@ -21,6 +21,7 @@
 	#include "Map Information.h"	// added by Shadooow
 #include "connect.h"
 #include "PATHAI.H"
+#include "soundman.h"
 
 
 //forward declarations of common classes to eliminate includes

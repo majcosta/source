@@ -11,6 +11,7 @@
 	#include "Strategic Movement.h"
 	#include "Game Clock.h"
 	#include "Strategic Mines.h"
+#include "soundman.h"
 
 AMBIENTDATA_STRUCT		gAmbData[ MAX_AMBIENT_SOUNDS ];
 INT16					gsNumAmbData = 0;

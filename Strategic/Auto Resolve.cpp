@@ -64,6 +64,7 @@
 #include "MilitiaIndividual.h"			// added by Flugente
 #include "Rebel Command.h"
 #include "Reinforcement.h"
+#include "Points.h"
 
 //#define INVULNERABILITY
 

@@ -12,6 +12,7 @@
 	#include "Quests.h"
 	#include "Tactical Save.h"
 	#include "BriefingRoom_Data.h"
+#include "soundman.h"
 
 
 #define MAX_FILTR_LOCATION_BUTTONS 11

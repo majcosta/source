@@ -92,6 +92,8 @@ extern "C" {
 #include "message.h"
 #include "Town Militia.h"
 #include <language.hpp>
+#include "Interface.h"
+#include "Strategic Town Loyalty.h"
 
 extern UINT8	gubWaitingForAllMercsToExitCode;
 

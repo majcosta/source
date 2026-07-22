@@ -21,6 +21,7 @@
 #include "SaveLoadScreen.h"
 #include <vfs/Core/vfs.h>
 #include <vfs/Tools/vfs_property_container.h>
+#include "Button Sound Control.h"
 
 
 #ifdef JA2UB

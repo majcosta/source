@@ -92,6 +92,7 @@
 #include "DynamicDialogueWidget.h"		// added by Flugente for DelayBoxDestructionBy(...)
 #include "AIInternals.h"				// sevenfm
 #include "strategic.h"					// shadooow for CreateNewMerc
+#include "mousesystem_macros.h"
 
 #ifdef JA2EDITOR
 #include "editscreen.h"

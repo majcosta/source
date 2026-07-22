@@ -6,6 +6,8 @@
 	#include "worldman.h"
 
 #include "AIInternals.h"
+#include "strategicmap.h"
+#include "Sys Globals.h"
 
 #define ROOF_LOCATION_CHANCE 8
 

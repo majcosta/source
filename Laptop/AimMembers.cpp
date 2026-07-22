@@ -50,6 +50,7 @@
 #include "InterfaceItemImages.h"
 #include <sstream>
 #include <language.hpp>
+#include "soundman.h"
 
 //
 //******	Defines	******

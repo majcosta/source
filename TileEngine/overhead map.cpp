@@ -24,6 +24,8 @@
 	#include "Rebel Command.h"
 
 #include "connect.h"
+#include "GameSettings.h"
+#include "random.h"
 
 #ifdef JA2EDITOR
 #include "Soldier Init List.h"

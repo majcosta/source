@@ -36,6 +36,7 @@
 #include "FileMan.h"
 #include <vfs/Core/vfs.h>
 #include <vfs/Core/vfs_file_raii.h>
+#include "soundman.h"
 
 #ifdef JA2UB
 #include "LuaInitNPCs.h"

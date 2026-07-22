@@ -13,6 +13,7 @@
 	#include "IMP Text System.h"
 	#include "input.h"
 	#include "english.h"
+#include "mousesystem_macros.h"
 
 
 // Kaiden this line was commented before I screwed with it

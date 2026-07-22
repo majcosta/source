@@ -68,6 +68,7 @@
 
 #include "history.h"
 #include <language.hpp>
+#include "soundman.h"
 
 //forward declarations of common classes to eliminate includes
 class OBJECTTYPE;

@@ -115,6 +115,7 @@
 //
 /////////////////////////////////////////////////////
 #include <language.hpp>
+#include "soundman.h"
 
 #ifdef JA2UB
 #include "Ja25 Strategic Ai.h"

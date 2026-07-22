@@ -28,6 +28,8 @@
 	#include "Shade Table Util.h"
 	#include "Rotting Corpses.h"
 	#include "PATHAI.H"
+#include "environment.h"
+#include "random.h"
 
 #define LVL1_L1_PER			(50)
 #define LVL1_L2_PER			(50)
