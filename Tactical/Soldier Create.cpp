@@ -44,6 +44,7 @@
 #include "connect.h"
 #include "message.h"
 #include "GameInitOptionsScreen.h"
+#include "soundman.h"
 
 #ifdef JA2UB
 #include "Ja25_Tactical.h"

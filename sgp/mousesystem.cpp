@@ -19,6 +19,7 @@
 	#include "input.h"
 	#include "MemMan.h"
 	#include "line.h"
+	#include "mousesystem_macros.h"
 		#include "video.h"
 		#define BASE_REGION_FLAGS		(MSYS_REGION_ENABLED | MSYS_SET_CURSOR)
 	#ifdef _JA2_RENDER_DIRTY

@@ -1,4 +1,5 @@
 #include "FilterDB.h"
+#include "GameSettings.h"
 
 namespace LogicalBodyTypes {
 

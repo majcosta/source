@@ -29,6 +29,7 @@
 #include <vfs/Core/vfs_os_functions.h>
 
 #include "random.h"
+#include "Button Sound Control.h"
 
 ////////////////////////////////////////////
 //

@@ -15,6 +15,8 @@
 	#include "Soldier macros.h"
 	#include "Strategic Movement.h"
 	#include "screenids.h"
+#include "GameSettings.h"
+#include "Morale.h"
 
 #ifndef JA2UB
 #include "NPC.h"

@@ -45,6 +45,7 @@
 #include "../ModularizedTacticalAI/include/Plan.h"
 #include "../ModularizedTacticalAI/include/PlanFactoryLibrary.h"
 #include "../ModularizedTacticalAI/include/AbstractPlanFactory.h"
+#include "soundman.h"
 
 
 #ifdef JA2UB

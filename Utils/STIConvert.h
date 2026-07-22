@@ -1,5 +1,6 @@
 #ifndef __STCICONVERT_H
 #define __STCICONVERT_H
+#include "imgfmt.h"
 
 
 #define CONVERT_ETRLE_COMPRESS							0x0020

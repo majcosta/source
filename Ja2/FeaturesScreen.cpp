@@ -22,6 +22,7 @@
 #include "Multi Language Graphic Utils.h"
 #include "connect.h"
 #include "mainmenuscreen.h"
+#include "soundman.h"
 
 extern UINT32	guiDoneButton; // symbol already declared globally in AimArchives.cpp (jonathanl)
 

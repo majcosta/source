@@ -8,6 +8,7 @@
 	#include "strategicmap.h"
 	#include "Rotting Corpses.h"
 	#include "WorldDat.h"	// added by Flugente
+#include "random.h"
 
 extern BOOLEAN DoesSAMExistHere( INT16 sSectorX, INT16 sSectorY, INT16 sSectorZ, INT32 sGridNo );
 

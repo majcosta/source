@@ -23,6 +23,7 @@
 #include "Game Init.h"
 #include "connect.h"
 #include "network.h" // for client name
+#include "Button Sound Control.h"
 
 
 ////////////////////////////////////////////

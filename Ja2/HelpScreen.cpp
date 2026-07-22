@@ -18,6 +18,7 @@
 #include "renderworld.h"
 #include "Game Init.h"
 #include "Overhead.h"
+#include "mousesystem_macros.h"
 
 extern INT16 gsVIEWPORT_END_Y;
 extern void PrintDate( void );

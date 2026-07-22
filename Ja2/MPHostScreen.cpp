@@ -34,6 +34,7 @@
 #include "mainmenuscreen.h"
 #include "Init.h"
 #include "XML.h"
+#include "Button Sound Control.h"
 
 ////////////////////////////////////////////
 //

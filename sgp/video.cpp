@@ -20,6 +20,8 @@
 
 #include "local.h"
 #include "Text.h"
+#include "DirectDraw Calls.h"
+#include "DirectX Common.h"
 
 
 #ifndef _MT

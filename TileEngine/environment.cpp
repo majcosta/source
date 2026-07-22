@@ -17,6 +17,7 @@
 
 #include "Text.h"
 #include "connect.h"
+#include "soundman.h"
 
 extern SECTOR_EXT_DATA	SectorExternalData[256][4];
 

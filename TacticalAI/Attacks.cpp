@@ -34,6 +34,8 @@
 
 // anv: for enemy taunts
 #include "Civ Quotes.h"
+#include "Init.h"
+#include "Points.h"
 
 extern INT16 DirIncrementer[8];
 

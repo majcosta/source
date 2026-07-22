@@ -23,6 +23,8 @@
 	#include "LogicalBodyTypes/BodyTypeDB.h"
 
 #include "Utilities.h"
+#include "GameSettings.h"
+#include "random.h"
 
 UINT32 guiShieldGraphic = 0;
 BOOLEAN fShieldGraphicInit = FALSE;

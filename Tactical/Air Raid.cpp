@@ -27,6 +27,7 @@
 	#include "Meanwhile.h"
 
 #include "GameInitOptionsScreen.h"
+#include "soundman.h"
 
 #define		SCRIPT_DELAY													10
 #define		AIR_RAID_SAY_QUOTE_TIME								3000

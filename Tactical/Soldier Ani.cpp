@@ -58,6 +58,7 @@
 #include "Civ Quotes.h"
 #include "connect.h"
 #include "fresh_header.h"
+#include "soundman.h"
 
 #ifdef JA2UB
 #else

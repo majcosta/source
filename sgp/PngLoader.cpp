@@ -19,6 +19,7 @@ namespace png
 }
 
 #include "sgp_auto_memory.h"
+#include "imgfmt.h"
 
 const vfs::String::str_t CONST_DOTPNG(L".png");
 const vfs::String::str_t CONST_DOTXML(L".xml");

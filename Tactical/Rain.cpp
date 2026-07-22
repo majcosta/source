@@ -18,6 +18,7 @@
 	#include "interface Dialogue.h"
 
 #include "Rain.h"
+#include "soundman.h"
 
 //forward declarations of common classes to eliminate includes
 class OBJECTTYPE;

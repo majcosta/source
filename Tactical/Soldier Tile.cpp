@@ -28,6 +28,7 @@
 	#include "Text.h"
 	#include "NPC.h"
 	#include "Soldier macros.h"
+#include "random.h"
 
 extern UINT8	gubWaitingForAllMercsToExitCode;
 

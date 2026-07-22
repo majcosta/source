@@ -13,6 +13,8 @@
 	#include "LightEffects.h"
 	#include "Soldier macros.h"
 	#include "Explosion Control.h"
+	#include "GameSettings.h"
+	#include "environment.h"
 #include "Reinforcement.h"
 
 #ifdef JA2UB

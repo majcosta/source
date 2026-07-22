@@ -16,6 +16,8 @@
 	#include "NPC.h"
 	#include "Explosion Control.h"
 	#include "Text.h"
+#include "environment.h"
+#include "GameSettings.h"
 
 #ifdef JA2TESTVERSION
 	#include "message.h"

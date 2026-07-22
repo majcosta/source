@@ -24,6 +24,8 @@ extern std::vector<std::wstring> gSquadNameVector;
 extern INT8	gbWorldSectorZ;
 extern BOOLEAN AreInMeanwhile();
 #include "connect.h"
+#include "GameSettings.h"
+#include "random.h"
 
 extern BOOLEAN gfTacticalPlacementGUIActive;
 extern INT32 iCurrentMapSectorZ;

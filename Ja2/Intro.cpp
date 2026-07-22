@@ -14,6 +14,7 @@
 #include "Luaglobal.h"
 #include "LuaInitNPCs.h"
 #include <language.hpp>
+#include "mousesystem_macros.h"
 
 BOOLEAN Style_JA = TRUE;
 extern INT8 Test = 0;

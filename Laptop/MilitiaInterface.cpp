@@ -23,6 +23,7 @@
 #include "Town Militia.h"
 #include "Interface Items.h"
 #include "Interface.h"		// for DIRTYLEVEL2
+#include "random.h"
 
 extern BOOLEAN gfMilitiaWebsiteMainRedraw;
 

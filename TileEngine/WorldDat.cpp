@@ -9,6 +9,7 @@
 #include <vfs/Core/vfs_file_raii.h>
 #include "XML_TileSet.hpp"
 #include "XMLWriter.h"
+#include "random.h"
 
 void ExportTilesets(vfs::Path const& filename);
 

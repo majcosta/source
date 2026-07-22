@@ -9,6 +9,8 @@
 	#include "Quests.h"
 
 #include "Queen Command.h"
+#include "Init.h"
+#include "Points.h"
 
 
 void MakeClosestEnemyChosenOne()

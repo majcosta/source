@@ -30,6 +30,7 @@
 	#include "Food.h"	// added by Flugente
 	#include "Queen Command.h"		// added by Flugente for FindUnderGroundSector(...)
 	#include "strategic.h"			// added by Flugente
+#include "soundman.h"
 
 #ifdef JA2UB
 #include "Ja25_Tactical.h"

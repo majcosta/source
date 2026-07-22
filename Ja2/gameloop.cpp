@@ -45,6 +45,8 @@
 
 //network headers
 #include "connect.h"
+#include "mousesystem_macros.h"
+#include "soundman.h"
 
 UINT32 guiCurrentScreen;
 UINT32 guiPendingScreen = NO_PENDING_SCREEN;
