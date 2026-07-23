@@ -1461,6 +1461,10 @@ static BOOLEAN TraitTileHasAdjTile(const INT32 startIndex, const bool onRoof)
 			}
 		}
 	}
+
+	// No adjacent tile matched. Falling off the end here returns garbage, and clang /O2
+	// treats it as unreachable -- give it a defined value instead.
+	return FALSE;
 }
 
 // ----------------------------- tracker display after this ----------------------------------------
