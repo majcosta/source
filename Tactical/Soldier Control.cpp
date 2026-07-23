@@ -1150,7 +1150,10 @@ void SOLDIERTYPE::initialize( )
 
 bool SOLDIERTYPE::exists( )
 {
-	if ( this == NULL )
+	// Called on null SOLDIERTYPE* and relies on this guard. Reading `this` through a
+	// volatile pointer stops clang /O2 assuming it is non-null and deleting the check.
+	const SOLDIERTYPE* volatile self = this;
+	if ( self == NULL )
 		return(FALSE);
 	return (TRUE);
 }
@@ -2561,7 +2564,9 @@ BOOLEAN SOLDIERTYPE::DeleteSoldier( void )
 	INT8			bDir;
 	BOOLEAN		fRet;
 
-	if ( this != NULL )
+	// Volatile load keeps clang /O2 from assuming `this` is non-null and dropping the guard.
+	const SOLDIERTYPE* volatile self = this;
+	if ( self != NULL )
 	{
 		//if(this->pBackGround!=NULL)
 		//MemFree(this->pBackGround);
@@ -24035,7 +24040,9 @@ void SOLDIERTYPE::SetSoldierAsUnderAiControl( void )
 	SOLDIERTYPE *pSoldier = NULL;
 
 	//this is silly, but left over from when pSoldierToSet was passed in as a parameter
-	if ( this == NULL )
+	// Volatile load keeps clang /O2 from assuming `this` is non-null and dropping the guard.
+	const SOLDIERTYPE* volatile self = this;
+	if ( self == NULL )
 	{
 		return;
 	}

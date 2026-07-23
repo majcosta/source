@@ -1425,7 +1425,9 @@ void POPUP::MenuBtnCallBack( MOUSE_REGION * pRegion, INT32 iReason )
 	UINT8 ubVolume = 10;
 
 	// sanity check #1
-	if (!this || this->boxId < 0 || this->id > POPUP::nextid){
+	// Volatile load keeps clang /O2 from assuming `this` is non-null and dropping the guard.
+	const POPUP* volatile self = this;
+	if (!self || this->boxId < 0 || this->id > POPUP::nextid){
 		#ifdef JA2TESTVERSION
 			 __debugbreak();
 		#else
@@ -1454,7 +1456,7 @@ void POPUP::MenuBtnCallBack( MOUSE_REGION * pRegion, INT32 iReason )
 				// sanity check #2
 				// if this popup was fine in check #1 but is broken now, chances are 
 				// we got deleted (or just plain broken) by the callback. 
-				if (!this || this->id > POPUP::nextid){
+				if (!self || this->id > POPUP::nextid){
 					#ifdef JA2TESTVERSION
 						 __debugbreak();
 					#else
@@ -1496,7 +1498,9 @@ void POPUP::MenuMvtCallBack(MOUSE_REGION * pRegion, INT32 iReason )
 	INT32 iType = 0;
 	INT32 iValue = 0;
 
-	if (!this || this->boxId < 0){
+	// Volatile load keeps clang /O2 from assuming `this` is non-null and dropping the guard.
+	const POPUP* volatile self = this;
+	if (!self || this->boxId < 0){
 		__debugbreak();
 	}
 	
