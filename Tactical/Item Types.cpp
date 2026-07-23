@@ -591,7 +591,14 @@ LBENODE* OBJECTTYPE::GetLBEPointer(unsigned int index)
 
 bool OBJECTTYPE::exists() const
 {
-	return(this && ubNumberOfObjects && usItem);
+	// This is called on null OBJECTTYPE* in many places and deliberately relies on
+	// the null-this guard below. Calling a member on null is UB, so at /O2 clang-cl
+	// assumes `this` is non-null and deletes the guard, then dereferences null here
+	// (access violation, crashes clang-cl Release builds; MSVC happens to keep it).
+	// Reading `this` through a volatile pointer forces a real load the optimizer may
+	// not assume is non-null, keeping the guard while every call site stays unchanged.
+	const OBJECTTYPE* volatile self = this;
+	return(self && self->ubNumberOfObjects && self->usItem);
 }
 
 void OBJECTTYPE::SpliceData(OBJECTTYPE& sourceObject, unsigned int numToSplice, StackedObjects::iterator beginIter)
