@@ -10,6 +10,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(LTO_OPTION "Enable link-time optimization if supported by compiler" OFF)
+option(BUILD_TESTS "Build the test harnesses under test/" OFF)
 
 include(CheckIPOSupported)
 check_ipo_supported(RESULT LinkTimeOptimization OUTPUT IpoError LANGUAGES C CXX)
@@ -183,3 +184,12 @@ foreach(app IN LISTS ApplicationTargets)
   target_link_libraries(${app}_sgp PRIVATE libpng)
   target_compile_definitions(${app}_sgp PRIVATE ${compilationFlags} ${debugFlags} NO_ZLIB_COMPRESSION)
 endforeach()
+
+# Test harnesses. Each is a small console executable that compiles just the unit
+# under test, so it stays off the video layer and links without the game.
+if(BUILD_TESTS)
+  add_executable(pixelate_fuzz
+    "${CMAKE_SOURCE_DIR}/test/pixelate_fuzz.cpp"
+    "${CMAKE_SOURCE_DIR}/sgp/vobject_pixelate.cpp"
+  )
+endif()
