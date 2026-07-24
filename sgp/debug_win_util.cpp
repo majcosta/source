@@ -208,6 +208,97 @@ void StackTrace::PrintBacktrace(const char* msg) {
 	OutputToStream(msg, &log);
 }
 
+// Called first-chance from the vectored crash handler, so it runs *inside* the
+// faulting thread with a possibly-wrecked heap: the very crash we want to report
+// is often heap corruption (a trashed std::map, a wild pointer). Anything that
+// allocates — the game Logger, std::vector, DbgHelp's Sym* — would fault again
+// and take the report down with it. So this path is deliberately heap-free: only
+// stack buffers and raw Win32. It emits raw module VAs; symbolize them offline
+// against the shipped PDB:  llvm-symbolizer --obj=JA2.exe <addr>
+namespace sgp {
+
+// Stamped into every crash report so a report maps to the exact build's PDB.
+// Copied into a fixed buffer (no heap) — safe to read from a crash handler.
+static char s_buildId[64] = { 0 };
+void setCrashBuildId(const char* id) {
+	if (id) lstrcpynA(s_buildId, id, sizeof(s_buildId));
+}
+
+void writeExceptionBacktrace(_EXCEPTION_POINTERS* ep) {
+	if (ep == NULL || ep->ContextRecord == NULL || ep->ExceptionRecord == NULL)
+		return;
+
+	// The same fault storms (Wine re-dispatches the crashing window message) and
+	// walking a wrecked stack can fault us in turn. Dump each distinct faulting
+	// address once, never re-enter. ponytail: single globals, fine in a crash.
+	static void* s_lastFault = NULL;
+	static bool  s_inDump    = false;
+	void* fault = ep->ExceptionRecord->ExceptionAddress;
+	if (s_inDump || fault == s_lastFault)
+		return;
+	s_lastFault = fault;
+	s_inDump = true;
+
+	// One fresh, numbered file per crash. CREATE_NEW claims the first free number,
+	// so reports never overwrite each other and pile up while a player is offline;
+	// the telemetry uploader drains and deletes them when it can reach the server.
+	char name[32];
+	HANDLE h = INVALID_HANDLE_VALUE;
+	for (int n = 1; n <= 999; ++n) {
+		wsprintfA(name, "crash_report_%03d.txt", n);
+		h = CreateFileA(name, GENERIC_WRITE, FILE_SHARE_READ, NULL,
+			CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+		if (h != INVALID_HANDLE_VALUE) break;
+		if (GetLastError() != ERROR_FILE_EXISTS) break; // real error, stop trying
+	}
+	if (h == INVALID_HANDLE_VALUE) { s_inDump = false; return; }
+
+	char line[192];
+	auto emit = [&](int n) { DWORD w; WriteFile(h, line, n, &w, NULL); };
+
+	const CONTEXT&          c = *ep->ContextRecord;
+	const EXCEPTION_RECORD& r = *ep->ExceptionRecord;
+
+	emit(wsprintfA(line,
+		"\r\n*** CRASH  code=%08lX  eip=%08lX  esp=%08lX  ebp=%08lX ***\r\n",
+		r.ExceptionCode, c.Eip, c.Esp, c.Ebp));
+	if (s_buildId[0])
+		emit(wsprintfA(line, "  build %s\r\n", s_buildId));
+	if (r.ExceptionCode == EXCEPTION_ACCESS_VIOLATION && r.NumberParameters >= 2)
+		emit(wsprintfA(line, "  access violation: %s %08lX\r\n",
+			r.ExceptionInformation[0] == 1 ? "write to " :
+			r.ExceptionInformation[0] == 8 ? "execute at" : "read from",
+			(DWORD)r.ExceptionInformation[1]));
+
+	// Code range of the main module, to keep the walk to our own return addresses.
+	HMODULE mod = GetModuleHandleA(NULL);
+	DWORD modLo = (DWORD)(DWORD_PTR)mod;
+	IMAGE_DOS_HEADER* dos = (IMAGE_DOS_HEADER*)mod;
+	IMAGE_NT_HEADERS* nt  = (IMAGE_NT_HEADERS*)(modLo + dos->e_lfanew);
+	DWORD modHi = modLo + nt->OptionalHeader.SizeOfImage;
+
+	// Committed stack bounds from the TEB, so a bad ebp can't fault our reads.
+	NT_TIB* tib = (NT_TIB*)NtCurrentTeb();
+	DWORD stkLo = (DWORD)(DWORD_PTR)tib->StackLimit;
+	DWORD stkHi = (DWORD)(DWORD_PTR)tib->StackBase;
+
+	emit(wsprintfA(line, "  [0] %08lX\r\n", c.Eip)); // exact crash site
+	DWORD ebp = c.Ebp;
+	for (int i = 1; i < 64; ++i) {
+		if (ebp < stkLo || ebp + 8 > stkHi || (ebp & 3)) break;
+		DWORD ret  = *(DWORD*)(ebp + 4);
+		DWORD next = *(DWORD*)ebp;
+		if (ret >= modLo && ret < modHi)
+			emit(wsprintfA(line, "  [%d] %08lX\r\n", i, ret));
+		if (next <= ebp) break; // frames must climb the stack
+		ebp = next;
+	}
+	FlushFileBuffers(h);
+	CloseHandle(h);
+	s_inDump = false;
+}
+} // namespace sgp
+
 void StackTrace::OutputToStream(const char* msg, sgp::Logger::LogInstance* os) {
 	SymbolContext* context = SymbolContext::Get();
 	DWORD error = context->init_error();

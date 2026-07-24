@@ -46,9 +46,20 @@ private:
 	DISALLOW_EVIL_CONSTRUCTORS(StackTrace);
 };
 
+struct _EXCEPTION_POINTERS;
+
 namespace sgp
 {
 	void dumpStackTrace(vfs::String const& msg);
+
+	// Write a heap-free crash report (registers + a raw return-address backtrace)
+	// for the faulting context to a numbered crash_report file; symbolize it
+	// offline against the build's PDB. Call first-chance from a vectored handler.
+	void writeExceptionBacktrace(_EXCEPTION_POINTERS* ep);
+
+	// Record the build-id (game version string) to stamp into crash reports, so
+	// a report can be matched to the exact build's PDB. Call once at startup.
+	void setCrashBuildId(const char* id);
 }
 
 #endif  // BASE_DEBUG_UTIL_H_

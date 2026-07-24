@@ -34,4 +34,12 @@ void StackTrace::PrintBacktrace(const char* msg)
 {
 }
 
+void sgp::writeExceptionBacktrace(_EXCEPTION_POINTERS* ep)
+{
+}
+
+void sgp::setCrashBuildId(const char* id)
+{
+}
+
 #endif
