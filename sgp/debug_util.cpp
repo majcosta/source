@@ -42,4 +42,8 @@ void sgp::setCrashBuildId(const char* id)
 {
 }
 
+void sgp::processCrashTelemetry(const wchar_t* url)
+{
+}
+
 #endif

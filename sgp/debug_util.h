@@ -60,6 +60,12 @@ namespace sgp
 	// Record the build-id (game version string) to stamp into crash reports, so
 	// a report can be matched to the exact build's PDB. Call once at startup.
 	void setCrashBuildId(const char* id);
+
+	// Startup crash-telemetry pass (heap is healthy here — never call from a
+	// crash handler). If url is empty the feature is off. On first run, asks the
+	// player for consent (native dialog) and remembers it; if granted, POSTs each
+	// pending crash_report_*.txt to url and deletes the ones that upload cleanly.
+	void processCrashTelemetry(const wchar_t* url);
 }
 
 #endif  // BASE_DEBUG_UTIL_H_

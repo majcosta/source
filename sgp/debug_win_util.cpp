@@ -13,6 +13,8 @@
 
 #include <dbghelp.h>
 
+#include <winhttp.h>
+
 #include <vfs/Tools/vfs_log.h>
 
 
@@ -296,6 +298,105 @@ void writeExceptionBacktrace(_EXCEPTION_POINTERS* ep) {
 	FlushFileBuffers(h);
 	CloseHandle(h);
 	s_inDump = false;
+}
+} // namespace sgp
+
+// --- Crash telemetry: upload pending crash_report_*.txt on the next launch. ---
+// Runs at startup (heap healthy), never from a crash handler. Ordinary code here.
+namespace {
+
+// Persisted consent: 1 = yes, 0 = no, -1 = not asked yet.
+int readConsent() {
+	HANDLE h = CreateFileA("telemetry.consent", GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (h == INVALID_HANDLE_VALUE) return -1;
+	char c = 0; DWORD got = 0;
+	ReadFile(h, &c, 1, &got, NULL);
+	CloseHandle(h);
+	return (got == 1 && c == '1') ? 1 : 0;
+}
+
+void writeConsent(bool yes) {
+	HANDLE h = CreateFileA("telemetry.consent", GENERIC_WRITE, 0, NULL,
+		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (h == INVALID_HANDLE_VALUE) return;
+	DWORD w; WriteFile(h, yes ? "1" : "0", 1, &w, NULL);
+	CloseHandle(h);
+}
+
+// POST one report file to url. Returns true only on a 2xx (safe to delete it).
+bool postReport(const wchar_t* url, const char* path) {
+	HANDLE fh = CreateFileA(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+		OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (fh == INVALID_HANDLE_VALUE) return false;
+	DWORD size = GetFileSize(fh, NULL);
+	std::vector<char> body(size ? size : 1);
+	DWORD got = 0;
+	BOOL read_ok = ReadFile(fh, body.data(), size, &got, NULL);
+	CloseHandle(fh);
+	if (!read_ok || got != size) return false;
+
+	URL_COMPONENTS uc = {}; uc.dwStructSize = sizeof(uc);
+	wchar_t host[256] = {}, urlpath[1024] = {};
+	uc.lpszHostName = host;    uc.dwHostNameLength = _countof(host);
+	uc.lpszUrlPath = urlpath;  uc.dwUrlPathLength  = _countof(urlpath);
+	if (!WinHttpCrackUrl(url, 0, 0, &uc)) return false;
+
+	HINTERNET hSession = WinHttpOpen(L"JA2-1.13-crash-telemetry",
+		WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
+	if (!hSession) return false;
+
+	bool ok = false;
+	if (HINTERNET hConnect = WinHttpConnect(hSession, host, uc.nPort, 0)) {
+		DWORD flags = (uc.nScheme == INTERNET_SCHEME_HTTPS) ? WINHTTP_FLAG_SECURE : 0;
+		if (HINTERNET hReq = WinHttpOpenRequest(hConnect, L"POST", urlpath, NULL,
+				WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, flags)) {
+			if (WinHttpSendRequest(hReq, L"Content-Type: text/plain\r\n", (DWORD)-1,
+					body.data(), size, size, 0) &&
+				WinHttpReceiveResponse(hReq, NULL)) {
+				DWORD status = 0, len = sizeof(status);
+				WinHttpQueryHeaders(hReq,
+					WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+					WINHTTP_HEADER_NAME_BY_INDEX, &status, &len, WINHTTP_NO_HEADER_INDEX);
+				ok = (status >= 200 && status < 300);
+			}
+			WinHttpCloseHandle(hReq);
+		}
+		WinHttpCloseHandle(hConnect);
+	}
+	WinHttpCloseHandle(hSession);
+	return ok;
+}
+
+} // anonymous namespace
+
+namespace sgp {
+void processCrashTelemetry(const wchar_t* url) {
+	if (url == NULL || url[0] == L'\0') return; // no endpoint configured: feature off
+
+	int consent = readConsent();
+	if (consent < 0) { // first run: ask once, remember the answer
+		int r = MessageBoxW(NULL,
+			L"This build can send crash reports to the developers to help fix bugs.\n"
+			L"A report contains only technical crash data \x2014 no personal information.\n\n"
+			L"Send crash reports automatically?",
+			L"Jagged Alliance 2 v1.13 \x2014 Crash Reporting",
+			MB_YESNO | MB_ICONQUESTION);
+		writeConsent(r == IDYES);
+		consent = (r == IDYES) ? 1 : 0;
+	}
+	if (consent != 1) return; // declined: leave reports on disk, accumulating
+
+	// Upload each pending report; delete only the ones that post cleanly, so a
+	// failed upload (no connection) simply retries next launch.
+	WIN32_FIND_DATAA fd;
+	HANDLE hFind = FindFirstFileA("crash_report_*.txt", &fd);
+	if (hFind == INVALID_HANDLE_VALUE) return;
+	do {
+		if (postReport(url, fd.cFileName))
+			DeleteFileA(fd.cFileName);
+	} while (FindNextFileA(hFind, &fd));
+	FindClose(hFind);
 }
 } // namespace sgp
 

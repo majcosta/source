@@ -970,6 +970,11 @@ void GetRuntimeSettings( )
 	vfs::PropertyContainer oProps;
 	oProps.initFromIniFile(GAME_INI_FILE);
 	PopulateSectionFromCommandLine(oProps, "Ja2 Settings");
+
+	// Upload crash reports from previous runs (first launch asks the player).
+	// Empty CRASH_TELEMETRY_URL = off. Runs here, at startup, never in a crash.
+	sgp::processCrashTelemetry(
+		oProps.getStringProperty("Ja2 Settings", L"CRASH_TELEMETRY_URL").c_str());
 	
 	vfs::String loc = oProps.getStringProperty("Ja2 Settings", L"LOCALE");
 	if(!loc.empty())
