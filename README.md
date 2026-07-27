@@ -65,10 +65,29 @@ Visit the [releases page](https://github.com/1dot13/source/releases) to download
         * Double-click on `Folder View` in the `Solution Explorer`
     * Click `Open a local folder`
         * Use this option if you already cloned the repository yourself.
-3. Visual Studio will automatically detect the CMake configuration files and will run the CMake generation. There will bet a CMake error in the logs saying `No existing preset was found, copied a preset template to [some_path]`. This is normal and only happens once.
-4. Click on the dropdown that says `x64-Debug` and select `Manage configurations...`. This should trigger Visual Studio to load the `CMakeUserPresets.json` file it just copied. Now you can close the window for managing the configurations.
-5. The `x64-Debug` option should have been replaced by `1dot13 Debug`. Click it and select `Manage configurations...` again. Here is where you configure the language for the built executables as well as which ones to build, Most important, here is where you set `CMAKE_RUNTIME_OUTPUT_DIRECTORY` to the path to your JA2 1.13 installation. This will be used for debugging. Note that the path needs to have a working 1.13 installation, and that includes the 1.13 game data.
+3. Visual Studio will automatically detect `CMakePresets.json` and run the CMake generation. Pick `1dot13 Debug`, `1dot13 Release` or `1dot13 RelWithDebInfo` in the configuration dropdown.
+4. So the built executables land in your JA2 1.13 installation and can be debugged there, set the environment variable `JA2_GAMEDIR` to its path, e.g. `setx JA2_GAMEDIR C:/Games/JA2` in a terminal, then restart Visual Studio. Note that the path needs a working 1.13 installation, and that includes the 1.13 game data.
+5. To change anything else — which applications to build, the compiler, an output directory per configuration — create a `CMakeUserPresets.json` next to `CMakePresets.json`. It is ignored by git and its presets can inherit from the `1dot13` ones:
+
+    ```json
+    {
+      "version": 3,
+      "configurePresets": [
+        {
+          "name": "my Debug",
+          "inherits": "1dot13 Debug",
+          "cacheVariables": {
+            "Applications": "JA2;JA2MAPEDITOR",
+            "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "C:/Games/JA2"
+          }
+        }
+      ]
+    }
+    ```
+
 6. You can use `Build -> Build All` to build the executables you selected in the configuration.
+
+> If you cloned before this was checked in, you have your own untracked `CMakePresets.json` in the source directory and git will refuse to update it. Rename it to `CMakeUserPresets.json` (renaming its presets so the names do not clash) or just delete it.
 
 
 ### Reports

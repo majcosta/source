@@ -1,0 +1,46 @@
+{
+  "version": 3,
+  "configurePresets": [
+    {
+      "name": "__base",
+      "hidden": true,
+      "description": "Applications takes any of JA2, JA2MAPEDITOR, JA2UB, JA2UBMAPEDITOR, and builds all four when empty. Set JA2_GAMEDIR in your environment to a JA2 1.13 installation, e.g. C:/Games/JA2, to put the executables where they can be debugged. Anything else you want to change locally belongs in CMakeUserPresets.json.",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      },
+      "architecture": {
+        "value": "x86",
+        "strategy": "external"
+      },
+      "cacheVariables": {
+        "Applications": "JA2",
+        "CMAKE_RUNTIME_OUTPUT_DIRECTORY": "$penv{JA2_GAMEDIR}"
+      }
+    },
+    {
+      "name": "RelWithDebInfo",
+      "inherits": "__base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "Release",
+      "inherits": "__base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "Debug",
+      "inherits": "__base",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ]
+}
