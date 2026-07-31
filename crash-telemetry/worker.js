@@ -25,13 +25,27 @@ const MAX_BYTES = 32 * 1024;
 // the length, so nothing in a report can shape the message around it.
 const clean = (s) => (s || "").replace(/[^A-Za-z0-9 .,+-]/g, "").slice(0, 64).trim();
 
+// A failed assertion is raised, not faulted (SGP_EXCEPTION_ASSERT, sgp/crash_report.h),
+// so its code is the same one every time and its address is inside RaiseException:
+// neither says anything. The line, file and message the report writes instead are the
+// whole of what a reader wants. Attacker-chosen like everything else — an AssertMsg
+// string is built out of game state, so it gets the same clean().
+const ASSERT_CODE = "E1A55E27";
+
 // Pull the header fields the client writes, for a one-line channel summary.
 // See writeExceptionBacktrace(): "*** CRASH code=... ***", then "  <key> <value>".
 function summarize(text) {
   const field = (name) => (text.match(new RegExp(`^\\s+${name} (.+)$`, "m")) || [])[1];
   const code = clean((text.match(/code=(\w+)/) || [])[1]) || "????????";
-  const av = clean((text.match(/access violation: (.+)/) || [])[1]);
-  const parts = [`\`${code}\`${av ? ` (${av})` : ""}`];
+  const parts = [];
+  if (code === ASSERT_CODE) {
+    const where = clean(field("assertion failed at"));
+    const msg = clean(field("message:"));
+    parts.push(`**assert**${where ? ` ${where}` : ""}${msg ? ` — ${msg}` : ""}`);
+  } else {
+    const av = clean((text.match(/access violation: (.+)/) || [])[1]);
+    parts.push(`\`${code}\`${av ? ` (${av})` : ""}`);
+  }
   const build = clean(field("build"));
   const handle = clean(field("handle"));
   if (build) parts.push(`build \`${build}\``);
