@@ -1787,7 +1787,8 @@ void DrawMouseText( )
 				// Set dest for gprintf to be different
 			SetFontDestBuffer( MOUSE_BUFFER , 0, 0, 64, 64, FALSE );
 
-			swprintf( pStr, L"%d", gsCurrentActionPoints );
+			INT16 remainingAP(gusSelectedSoldier->bActionPoints - gsCurrentActionPoints);
+			swprintf( pStr, L"%d", remainingAP );
 
 			if ( gfUIDisplayActionPointsCenter )
 			{
@@ -1845,7 +1846,7 @@ void DrawMouseText( )
 				SetFontShadow( DEFAULT_SHADOW );
 			}
 
-			mprintf( sX, sY, L"%d", gsCurrentActionPoints );
+			mprintf( sX, sY, L"%d", remainingAP);
 			//mprintf( sX, sY, L"%d %d", sX, sY );
 
 			SetFontShadow( DEFAULT_SHADOW );
