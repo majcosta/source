@@ -23,6 +23,7 @@
 	#include "LogicalBodyTypes/BodyTypeDB.h"
 
 #include "Utilities.h"
+#include "Cursors.h"
 
 UINT32 guiShieldGraphic = 0;
 BOOLEAN fShieldGraphicInit = FALSE;
@@ -2253,7 +2254,7 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 									SetFont(TINYFONT1);
 									SetFontDestBuffer(guiSAVEBUFFER, 0, gsVIEWPORT_WINDOW_START_Y, SCREEN_WIDTH, gsVIEWPORT_WINDOW_END_Y, FALSE);
 									VarFindFontCenterCoordinates(sXPos, sYPos, 1, 1, TINYFONT1, &sX, &sY, L"%d", pNode->uiAPCost);
-									mprintf_buffer(pDestBuf, uiDestPitchBYTES, TINYFONT1, sX, sY, L"%d", pNode->uiAPCost);
+									DisplayCursorActionPoints((INT16)pNode->uiAPCost, sX, sY, pDestBuf, uiDestPitchBYTES);
 									SetFontDestBuffer(FRAME_BUFFER, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, FALSE);
 								}
 								else if ((uiLevelNodeFlags  & LEVELNODE_ERASEZ) && !(uiFlags&TILES_DIRTY))

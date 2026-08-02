@@ -1647,6 +1647,15 @@ void BltJA2CursorData( )
 }
 
 
+void DisplayCursorActionPoints( INT16 sAPCost, INT16 sX, INT16 sY, UINT8* pDestBuf, UINT32 uiDestPitchBYTES )
+{
+	if ( pDestBuf != NULL )
+		mprintf_buffer( pDestBuf, uiDestPitchBYTES, TINYFONT1, sX, sY, L"%d", sAPCost );
+	else
+		mprintf( sX, sY, L"%d", sAPCost );
+}
+
+
 void DrawMouseText( )
 {
 	CHAR16 pStr[ 512 ];
@@ -1846,7 +1855,7 @@ void DrawMouseText( )
 				SetFontShadow( DEFAULT_SHADOW );
 			}
 
-			mprintf( sX, sY, L"%d", gsCurrentActionPoints );
+			DisplayCursorActionPoints( gsCurrentActionPoints, sX, sY, NULL, 0 );
 			//mprintf( sX, sY, L"%d %d", sX, sY );
 
 			SetFontShadow( DEFAULT_SHADOW );

@@ -309,6 +309,11 @@ void InitCursors( );
 void HandleAnimatedCursors( );
 
 void DrawMouseActionPoints( );
+
+// Draws the movement/action AP number for a cursor. pDestBuf != NULL blits into that
+// locked buffer (tile render loop); NULL prints to the current font dest buffer (mouse buffer).
+// Single seam for AP-cursor text so cost/remaining display stays in one place.
+void DisplayCursorActionPoints( INT16 sAPCost, INT16 sX, INT16 sY, UINT8* pDestBuf, UINT32 uiDestPitchBYTES );
 void UpdateAnimatedCursorFrames( UINT32 uiCursorIndex );
 
 void SetCursorSpecialFrame( UINT32 uiCursor, UINT8 ubFrame );
