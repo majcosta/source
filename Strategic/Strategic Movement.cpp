@@ -1,5 +1,6 @@
 	#include "builddefines.h"
 	#include <stdlib.h>
+	#include <set>
 	#include "Strategic Movement.h"
 	#include "MemMan.h"
 	#include "DEBUG.H"
@@ -89,7 +90,10 @@ BOOLEAN ValidateGroups( GROUP *pGroup );
 extern BOOLEAN gubNumAwareBattles;
 extern INT8 SquadMovementGroups[ ];
 
-BOOLEAN gfDelayAutoResolveStart = FALSE;
+// Sectors whose upcoming battle must go straight to autoresolve (no combat-able merc there).
+// Keyed by sector and erased only when that battle's autoresolve actually starts, so a
+// simultaneous battle in another sector can neither consume it nor jump ahead of it.
+std::set<UINT8> gForcedAutoResolveSectors;
 
 
 BOOLEAN gfRandomizingPatrolGroup = FALSE;
@@ -1053,7 +1057,7 @@ void PrepareForPreBattleInterface( GROUP *pPlayerDialogGroup, GROUP *pInitiating
 	if ( pPlayerDialogGroup->usGroupTeam == MILITIA_TEAM )
 	{
 		// force direct transition to autoresolve
-		gfDelayAutoResolveStart = TRUE;
+		gForcedAutoResolveSectors.insert( (UINT8)SECTOR( pPlayerDialogGroup->ubSectorX, pPlayerDialogGroup->ubSectorY ) );
 
 		// We MUST start combat, but donot play quote...
 		InitPreBattleInterface( pInitiatingBattleGroup, TRUE );
@@ -1366,10 +1370,11 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 			}
 		}
 
-		gpInitPrebattleGroup = pGroup;
-
 		if( GetEnemyEncounterCode() == BLOODCAT_AMBUSH_CODE || GetEnemyEncounterCode() == ENTERING_BLOODCAT_LAIR_CODE )
 		{
+			// only battles that arm a trigger (box or notify) own this slot; writing it for every
+			// battle let a later merc battle hijack an earlier battle's message box
+			gpInitPrebattleGroup = pGroup;
 			NotifyPlayerOfBloodcatBattle( pGroup->ubSectorX, pGroup->ubSectorY );
 			return TRUE;
 		}
@@ -1377,7 +1382,8 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 		if( !fCombatAbleMerc )
 		{
 			//Prepare for instant autoresolve.
-			gfDelayAutoResolveStart = TRUE;
+			gpInitPrebattleGroup = pGroup;
+			gForcedAutoResolveSectors.insert( (UINT8)SECTOR( pGroup->ubSectorX, pGroup->ubSectorY ) );
 			gfUsePersistantPBI = TRUE;
 			if( fMilitiaPresent )
 			{
@@ -3118,6 +3124,11 @@ void RemoveAllGroups()
 {
 	// Since we are removing all groups, clear the gpBattleGroup
 	gpBattleGroup = NULL;
+
+	// none of the battles these describe exist any more (new game / load)
+	gpInitPrebattleGroup = NULL;
+	gForcedAutoResolveSectors.clear();
+	ClearPendingBattles();
 
 	gfRemovingAllGroups = TRUE;
 	while( gpGroupList )
@@ -6208,7 +6219,7 @@ void CheckCombatInSectorDueToUnusualEnemyArrival( UINT8 aTeam, INT16 sX, INT16 s
 		if ( !fCombatAbleMerc )
 		{
 			//Prepare for instant autoresolve.
-			gfDelayAutoResolveStart = TRUE;
+			gForcedAutoResolveSectors.insert( (UINT8)SECTOR( sX, sY ) );
 			gfUsePersistantPBI = TRUE;
 			if ( fMilitiaPresent )
 			{
