@@ -22,6 +22,7 @@
 	#include "screenids.h"
 	#include "Interface Utils.h"
 	#include "strategicmap.h"
+	#include "Strategic Movement.h"
 	#include "PreBattle Interface.h"
 	#include "Game Clock.h"
 	#include "Quests.h"
@@ -1017,13 +1018,8 @@ void HandleDialogue( )
 		{
 			UnLockPauseState();
 
-			// Flugente: what hideous idiocy is this? We cast a UINT32 as GROUP*? This is likely to return garbage.
-			// Why the hell not use the id instead?
-			InitPreBattleInterface( (GROUP*)QItem.uiSpecialEventData, TRUE );
-
-			/*GROUP* pGroup = GetGroup( (UINT8)QItem.uiSpecialEventData );
-			if ( pGroup )
-				InitPreBattleInterface( pGroup, TRUE );*/
+			// NULL is legal: a battle with no group, or a group destroyed while its message box was up
+			InitPreBattleInterface( GetGroup( (UINT8)QItem.uiSpecialEventData ), TRUE );
 		}
 		if( QItem.uiSpecialEventFlag & DIALOGUE_ADD_EVENT_FOR_SOLDIER_UPDATE_BOX )
 		{
