@@ -15,7 +15,7 @@ BOOLEAN IsPersistantPBI();
 void SetPersistantPBI( BOOLEAN fPersistant );
 BOOLEAN AutomaticallyStartAutoResolve();
 void SetAutomaticallyStartAutoResolve( BOOLEAN fAuto );
-void SetDelayAutoResolveStart( BOOLEAN fDelay );
+void ForceAutoResolveInSector( UINT8 ubSector );
 void SetEnteringMapScreenToEnterPreBattleInterface( BOOLEAN fEntering );
 extern BOOLEAN gfDisplayPotentialRetreatPaths;
 extern BOOLEAN fDisableMapInterfaceDueToBattle;
@@ -87,6 +87,10 @@ void SetEnemyEncounterCode( UINT8 aCode );
 //would turn hostile, which would disable the ability to autoresolve the battle.
 UINT8 GetExplicitEnemyEncounterCode();
 void SetExplicitEnemyEncounterCode( UINT8 aCode );
+
+//Drops battles queued behind the current one, and pending forced autoresolves. Only valid when
+//the groups they refer to are going away too, ie. starting or loading a game.
+void ClearPendingBattles();
 
 //Location of the current battle (determines where the animated icon is blitted) and if the
 //icon is to be blitted.

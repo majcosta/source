@@ -1052,7 +1052,7 @@ void PrepareForPreBattleInterface( GROUP *pPlayerDialogGroup, GROUP *pInitiating
 	if ( pPlayerDialogGroup->usGroupTeam == MILITIA_TEAM )
 	{
 		// force direct transition to autoresolve
-		SetDelayAutoResolveStart( TRUE );
+		ForceAutoResolveInSector( (UINT8)SECTOR( pPlayerDialogGroup->ubSectorX, pPlayerDialogGroup->ubSectorY ) );
 
 		// We MUST start combat, but donot play quote...
 		InitPreBattleInterface( pInitiatingBattleGroup, TRUE );
@@ -1365,10 +1365,11 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 			}
 		}
 
-		gpInitPrebattleGroup = pGroup;
-
 		if( GetEnemyEncounterCode() == BLOODCAT_AMBUSH_CODE || GetEnemyEncounterCode() == ENTERING_BLOODCAT_LAIR_CODE )
 		{
+			// only battles that arm a trigger (box or notify) own this slot; writing it for every
+			// battle let a later merc battle hijack an earlier battle's message box
+			gpInitPrebattleGroup = pGroup;
 			NotifyPlayerOfBloodcatBattle( pGroup->ubSectorX, pGroup->ubSectorY );
 			return TRUE;
 		}
@@ -1376,7 +1377,8 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 		if( !fCombatAbleMerc )
 		{
 			//Prepare for instant autoresolve.
-			SetDelayAutoResolveStart( TRUE );
+			gpInitPrebattleGroup = pGroup;
+			ForceAutoResolveInSector( (UINT8)SECTOR( pGroup->ubSectorX, pGroup->ubSectorY ) );
 			SetPersistantPBI( TRUE );
 			if( fMilitiaPresent )
 			{
@@ -3152,6 +3154,10 @@ void RemoveAllGroups()
 {
 	// Since we are removing all groups, clear the gpBattleGroup
 	gpBattleGroup = NULL;
+
+	// none of the battles these describe exist any more (new game / load)
+	gpInitPrebattleGroup = NULL;
+	ClearPendingBattles();
 
 	gfRemovingAllGroups = TRUE;
 	while( gpGroupList )
@@ -6354,7 +6360,7 @@ void CheckCombatInSectorDueToUnusualEnemyArrival( UINT8 aTeam, INT16 sX, INT16 s
 		if ( !fCombatAbleMerc )
 		{
 			//Prepare for instant autoresolve.
-			SetDelayAutoResolveStart( TRUE );
+			ForceAutoResolveInSector( (UINT8)SECTOR( sX, sY ) );
 			SetPersistantPBI( TRUE );
 			if ( fMilitiaPresent )
 			{

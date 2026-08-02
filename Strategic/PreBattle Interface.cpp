@@ -1,4 +1,6 @@
 	#include <stdio.h>
+	#include <deque>
+	#include <set>
 	#include "PreBattle Interface.h"
 	#include "Button System.h"
 	#include "mousesystem.h"
@@ -52,6 +54,7 @@
 #include "GameInitOptionsScreen.h"
 
 extern void InitializeTacticalStatusAtBattleStart();
+extern BOOLEAN gfWorldLoaded;
 extern UILayout_Map UI_MAP;
 
 #ifdef JA2BETAVERSION
@@ -68,7 +71,10 @@ SOLDIERTYPE *gpTacticalTraversalChosenSoldier = NULL;
 
 
 static BOOLEAN gfAutomaticallyStartAutoResolve = FALSE;
-static BOOLEAN gfDelayAutoResolveStart = FALSE;
+// Sectors whose upcoming battle must go straight to autoresolve (no combat-able merc there).
+// Keyed by sector and erased only when that battle's autoresolve actually starts, so a
+// simultaneous battle in another sector can neither consume it nor jump ahead of it.
+static std::set<UINT8> gForcedAutoResolveSectors;
 BOOLEAN gfAutoAmbush = FALSE;
 BOOLEAN gfHighPotentialForAmbush = FALSE;
 BOOLEAN gfGotoSectorTransition = FALSE;
@@ -149,6 +155,27 @@ BOOLEAN gfRenderPBInterface = FALSE;
 BOOLEAN	gfPBButtonsHidden = FALSE;
 BOOLEAN fDisableMapInterfaceDueToBattle = FALSE;
 
+// Several sectors can trigger battles in the same strategic tick, but the PBI and the globals it
+// reads hold exactly one. The battles that lose the race wait here and are re-raised from
+// HandlePreBattleInterfaceStates once the current one is over. Snapshots, because the battle that
+// goes first overwrites the globals these values live in.
+struct PENDING_PBI
+{
+	UINT8	ubGroupID;				// 0 = groupless battle (creature attack, unusual arrival)
+	UINT8	ubSector;				// where the battle is; for pick/dedupe decisions
+	UINT8	ubSectorIDOfAttack;		// gubSectorIDOfCreatureAttack at pend time, for groupless re-raise
+	UINT8	ubEncounterCode;		// base code; the explicit one is re-derived by InitPreBattleInterface
+	BOOLEAN	fPersistantPBI;
+	BOOLEAN	fCantRetreat;
+};
+static std::deque<PENDING_PBI> gPendingPBIs;
+
+void ClearPendingBattles()
+{
+	gPendingPBIs.clear();
+	gForcedAutoResolveSectors.clear();
+}
+
 void DoTransitionFromMapscreenToPreBattleInterface();
 
 BOOLEAN gfBlinkHeader = FALSE;
@@ -216,7 +243,7 @@ void SetPersistantPBI( BOOLEAN fPersistant ) { gfUsePersistantPBI = fPersistant;
 
 BOOLEAN AutomaticallyStartAutoResolve() { return gfAutomaticallyStartAutoResolve; }
 void SetAutomaticallyStartAutoResolve( BOOLEAN fAuto ) { gfAutomaticallyStartAutoResolve = fAuto; }
-void SetDelayAutoResolveStart( BOOLEAN fDelay ) { gfDelayAutoResolveStart = fDelay; }
+void ForceAutoResolveInSector( UINT8 ubSector ) { gForcedAutoResolveSectors.insert( ubSector ); }
 void SetEnteringMapScreenToEnterPreBattleInterface( BOOLEAN fEntering ) { gfEnteringMapScreenToEnterPreBattleInterface = fEntering; }
 
 INT32 giHilitedInvolved = 0;
@@ -323,9 +350,6 @@ void InitPreBattleInterface( GROUP *pBattleGroup, BOOLEAN fPersistantPBI )
 		AbortMovementPlottingMode( );
 	}
 
-	if( IsPreBattleInterfaceActive() )
-		return;
-
 	//CHRISL: If for some reason we're not looking at a valid sector, leave the preBattleInterface.
 	if(	pBattleGroup != NULL && (pBattleGroup->ubSectorX < MINIMUM_VALID_X_COORDINATE ||
 		pBattleGroup->ubSectorX > MAXIMUM_VALID_X_COORDINATE ||
@@ -335,6 +359,44 @@ void InitPreBattleInterface( GROUP *pBattleGroup, BOOLEAN fPersistantPBI )
 		pBattleGroup->ubSectorZ > MAXIMUM_VALID_Z_COORDINATE) )
 	{
 		return;
+	}
+
+	{
+		UINT8 ubBattleSector = pBattleGroup ? (UINT8)SECTOR( pBattleGroup->ubSectorX, pBattleGroup->ubSectorY ) : gubSectorIDOfCreatureAttack;
+		BOOLEAN fMustAutoResolve = ( gForcedAutoResolveSectors.count( ubBattleSector ) > 0 );
+
+		// Wait our turn if a PBI is already up, or if a forced-autoresolve battle is still in
+		// flight to its trigger: that one cannot be taken to tactical, so it goes first, and its
+		// sector stays in the set until its autoresolve actually starts.
+		if( IsPreBattleInterfaceActive() || ( !fMustAutoResolve && !gForcedAutoResolveSectors.empty() ) )
+		{
+			// One battle, one entry: a group of only-unconscious mercs arms a message box AND calls
+			// in here directly, and the active PBI may already be this very battle.
+			if( IsPreBattleInterfaceActive() && SECTOR( gubPBSectorX, gubPBSectorY ) == ubBattleSector )
+				return;
+			for( const PENDING_PBI& pending : gPendingPBIs )
+			{
+				if( pending.ubSector == ubBattleSector )
+					return;
+			}
+
+			PENDING_PBI pending;
+			pending.ubGroupID			= pBattleGroup ? pBattleGroup->ubGroupID : 0;
+			pending.ubSector			= ubBattleSector;
+			pending.ubSectorIDOfAttack	= gubSectorIDOfCreatureAttack;
+			pending.ubEncounterCode		= GetEnemyEncounterCode();
+			pending.fPersistantPBI		= fPersistantPBI;
+			pending.fCantRetreat		= gfCantRetreatInPBI;
+			gPendingPBIs.push_back( pending );
+
+			// one-shot armed for THIS battle; restored when it is re-raised
+			gfCantRetreatInPBI = FALSE;
+
+			// If a merc quote triggered us, it is over now; input has to come back or the player
+			// can never acknowledge the message box of the battle we are waiting on.
+			fDisableMapInterfaceDueToBattle = FALSE;
+			return;
+		}
 	}
 
 	gfPersistantPBI = fPersistantPBI;
@@ -2704,14 +2766,49 @@ void HandlePreBattleInterfaceStates()
 			InitPreBattleInterface( gpBattleGroup, TRUE );
 		}
 	}
-	else if( gfDelayAutoResolveStart && IsPreBattleInterfaceActive() )
+	else if( IsPreBattleInterfaceActive() && gForcedAutoResolveSectors.count( (UINT8)SECTOR( gubPBSectorX, gubPBSectorY ) ) )
 	{
-		gfDelayAutoResolveStart = FALSE;
+		gForcedAutoResolveSectors.erase( (UINT8)SECTOR( gubPBSectorX, gubPBSectorY ) );
 		gfAutomaticallyStartAutoResolve = TRUE;
 	}
 	else if( gfAutomaticallyStartAutoResolve )
 	{
 		gfAutomaticallyStartAutoResolve = FALSE;
 		ActivateAutomaticAutoResolveStart();
+	}
+	else if( !IsPreBattleInterfaceActive() && !gfEnteringMapScreenToEnterPreBattleInterface &&
+		!fDisableMapInterfaceDueToBattle && !gPendingPBIs.empty() &&
+		( !gfWorldLoaded || !gTacticalStatus.fEnemyInSector ) )
+	{
+		// The battle that was hogging the PBI is done - re-raise the next one that waited.
+		// Forced-autoresolve battles jump the queue; while one is still in flight to its trigger
+		// (sector in the set but not queued here yet), everything else keeps waiting.
+		// ponytail: a forced battle whose group dies before its box is acknowledged leaves its
+		// sector in the set and stalls the queue until the next battle in that sector; a lifetime
+		// hook on RemovePGroup is the upgrade path.
+		std::deque<PENDING_PBI>::iterator it = gPendingPBIs.begin();
+		for( ; it != gPendingPBIs.end(); ++it )
+		{
+			if( gForcedAutoResolveSectors.count( it->ubSector ) )
+				break;
+		}
+		if( it == gPendingPBIs.end() && !gForcedAutoResolveSectors.empty() )
+			return;
+		if( it == gPendingPBIs.end() )
+			it = gPendingPBIs.begin();
+
+		PENDING_PBI pending = *it;
+		gPendingPBIs.erase( it );
+
+		GROUP *pGroup = pending.ubGroupID ? GetGroup( pending.ubGroupID ) : NULL;
+
+		// group can be gone by now - wiped out elsewhere, or the sector settled without us
+		if( pGroup || !pending.ubGroupID )
+		{
+			gubSectorIDOfCreatureAttack = pending.ubSectorIDOfAttack;
+			SetEnemyEncounterCode( pending.ubEncounterCode );
+			gfCantRetreatInPBI = pending.fCantRetreat;
+			InitPreBattleInterface( pGroup, pending.fPersistantPBI );
+		}
 	}
 }
