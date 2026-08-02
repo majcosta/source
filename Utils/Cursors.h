@@ -314,7 +314,7 @@ void DrawMouseActionPoints( );
 
 // Draws the movement/action AP number for a cursor. pDestBuf != NULL blits into that
 // locked buffer (tile render loop); NULL prints to the current font dest buffer (mouse buffer).
-auto DisplayCursorActionPoints(const SoldierID soldier, INT16 apCost, INT16 x, INT16 y, UINT8* destBuf, UINT32 destPitch) -> void;
+auto DisplayCursorActionPoints(INT16 remAP, INT16 x, INT16 y, UINT8* destBuf, UINT32 destPitch) -> void;
 
 void UpdateAnimatedCursorFrames( UINT32 uiCursorIndex );
 

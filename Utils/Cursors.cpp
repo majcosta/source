@@ -1650,19 +1650,15 @@ void BltJA2CursorData( )
 
 namespace
 {
-	auto drawYellowIfNoCarryoverAP = [](INT16 remAP) {
+	auto colorWarnNoCarryoverAP = [](INT16 remAP) {
 		if( remAP < APBPConstants[MAX_AP_CARRIED] ) SetFontForeground(FONT_MCOLOR_LTYELLOW);
 	};
 }
 
-auto DisplayCursorActionPoints(const SoldierID soldier, INT16 apCost, INT16 x, INT16 y, UINT8* destBuf = nullptr, UINT32 destPitch = 0) -> void
+auto DisplayCursorActionPoints(INT16 remAP, INT16 x, INT16 y, UINT8* destBuf = nullptr, UINT32 destPitch = 0) -> void
 {
-	if (soldier == NOBODY)
-		return;
-
-	auto remAP{ soldier->bActionPoints - apCost };
-
-	drawYellowIfNoCarryoverAP(remAP);
+	if(!gfUIDisplayActionPointsInvalid)
+		colorWarnNoCarryoverAP(remAP);
 	if (destBuf) {
 		mprintf_buffer(destBuf, destPitch, TINYFONT1, x, y, L"%d", remAP);
 	}
@@ -1813,7 +1809,13 @@ void DrawMouseText( )
 				// Set dest for gprintf to be different
 			SetFontDestBuffer( MOUSE_BUFFER , 0, 0, 64, 64, FALSE );
 
-			swprintf( pStr, L"%d", gsCurrentActionPoints );
+			if (gusSelectedSoldier == NOBODY)
+				return;
+
+			auto remAP{gusSelectedSoldier->bActionPoints - gsCurrentActionPoints};
+
+
+			swprintf( pStr, L"%d", remAP );
 
 			if ( gfUIDisplayActionPointsCenter )
 			{
@@ -1871,7 +1873,7 @@ void DrawMouseText( )
 				SetFontShadow( DEFAULT_SHADOW );
 			}
 
-			DisplayCursorActionPoints(gusSelectedSoldier, gsCurrentActionPoints, sX, sY);
+			DisplayCursorActionPoints(remAP, sX, sY);
 			//mprintf( sX, sY, L"%d %d", sX, sY );
 
 			SetFontShadow( DEFAULT_SHADOW );

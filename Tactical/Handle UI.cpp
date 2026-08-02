@@ -5340,7 +5340,6 @@ UINT32 UIHandleLCOnTerrain( UI_EVENT *pUIEvent )
 		gfUIHandleShowMoveGrid = TRUE;
 		gsUIHandleShowMoveGridLocation = sXPos + (MAXCOL * sYPos );
 
-		gubShowActionPointsInRed = 5;
 		//gfDisplayFullCountRingBurst = FALSE;
 	}
 
