@@ -7,9 +7,11 @@
 	#include "Font.h"
 	#include "Font Control.h"
 	#include "Sys Globals.h"
+
 	#include "Handle UI.h"
 	#include "Interface.h"
 	#include "Overhead.h"
+	#include "Points.h"
 	#include "Cursor Control.h"
 	#include "Sound Control.h"
 	// HEADROCK HAM B2.6: included this here to allow toggling the CTH bars.
@@ -1646,13 +1648,27 @@ void BltJA2CursorData( )
 	}
 }
 
-
-void DisplayCursorActionPoints( INT16 sAPCost, INT16 sX, INT16 sY, UINT8* pDestBuf, UINT32 uiDestPitchBYTES )
+namespace
 {
-	if ( pDestBuf != NULL )
-		mprintf_buffer( pDestBuf, uiDestPitchBYTES, TINYFONT1, sX, sY, L"%d", sAPCost );
-	else
-		mprintf( sX, sY, L"%d", sAPCost );
+	auto drawYellowIfNoCarryoverAP = [](INT16 remAP) {
+		if( remAP < APBPConstants[MAX_AP_CARRIED] ) SetFontForeground(FONT_MCOLOR_LTYELLOW);
+	};
+}
+
+auto DisplayCursorActionPoints(const SoldierID soldier, INT16 apCost, INT16 x, INT16 y, UINT8* destBuf = nullptr, UINT32 destPitch = 0) -> void
+{
+	if (soldier == NOBODY)
+		return;
+
+	auto remAP{ soldier->bActionPoints - apCost };
+
+	drawYellowIfNoCarryoverAP(remAP);
+	if (destBuf) {
+		mprintf_buffer(destBuf, destPitch, TINYFONT1, x, y, L"%d", remAP);
+	}
+	else {
+		mprintf(x, y, L"%d", remAP);
+	}
 }
 
 
@@ -1855,7 +1871,7 @@ void DrawMouseText( )
 				SetFontShadow( DEFAULT_SHADOW );
 			}
 
-			DisplayCursorActionPoints( gsCurrentActionPoints, sX, sY, NULL, 0 );
+			DisplayCursorActionPoints(gusSelectedSoldier, gsCurrentActionPoints, sX, sY);
 			//mprintf( sX, sY, L"%d %d", sX, sY );
 
 			SetFontShadow( DEFAULT_SHADOW );
