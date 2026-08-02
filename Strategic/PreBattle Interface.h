@@ -83,6 +83,10 @@ void SetEnemyEncounterCode( UINT8 aCode );
 UINT8 GetExplicitEnemyEncounterCode();
 void SetExplicitEnemyEncounterCode( UINT8 aCode );
 
+//Drops battles that were queued behind another one. Only valid when the groups they refer to are
+//going away too, ie. starting or loading a game.
+void ClearPendingBattles();
+
 //Location of the current battle (determines where the animated icon is blitted) and if the
 //icon is to be blitted.
 extern BOOLEAN gfBlitBattleSectorLocator;

@@ -707,7 +707,7 @@ BOOLEAN HandleTimeCompressWithTeamJackedInAndGearedToGo( void );
 BOOLEAN NotifyPlayerWhenEnemyTakesControlOfImportantSector( INT16 sSectorX, INT16 sSectorY, INT8 bSectorZ, BOOLEAN fContested );
 
 // handle notifying player of invasion by enemy
-void NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 bSectorZ, MSGBOX_CALLBACK ReturnCallback );
+BOOLEAN NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 bSectorZ, MSGBOX_CALLBACK ReturnCallback );
 
 void ShutDownUserDefineHelpTextRegions( void );
 

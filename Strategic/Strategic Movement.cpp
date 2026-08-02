@@ -1,5 +1,7 @@
 	#include "builddefines.h"
 	#include <stdlib.h>
+	#include <queue>
+	#include <set>
 	#include "Strategic Movement.h"
 	#include "MemMan.h"
 	#include "DEBUG.H"
@@ -89,7 +91,10 @@ BOOLEAN ValidateGroups( GROUP *pGroup );
 extern BOOLEAN gubNumAwareBattles;
 extern INT8 SquadMovementGroups[ ];
 
-BOOLEAN gfDelayAutoResolveStart = FALSE;
+// Sectors whose PBI must go straight to autoresolve, ie. the player has nobody there to take into
+// tactical. Sector-bound and a set, because several of these can be armed at once and a simultaneous
+// battle elsewhere would otherwise open its PBI first and consume a plain flag.
+std::set<UINT8> gForcedAutoResolveSectors;
 
 
 BOOLEAN gfRandomizingPatrolGroup = FALSE;
@@ -120,7 +125,11 @@ BOOLEAN PossibleToCoordinateSimultaneousGroupArrivals( GROUP *pGroup );
 
 void HandleNonCombatGroupArrival( GROUP *pGroup, BOOLEAN fMainGroup, BOOLEAN fNeverLeft );
 
-GROUP *gpInitPrebattleGroup = NULL;
+// Groups whose battle is waiting on a message box before its PBI can be raised. A FIFO because a
+// battle in another sector can arm its own notification before the player dismisses the first one;
+// a single slot would hand the wrong group to whichever box is acknowledged first. Group IDs, not
+// pointers, so a group destroyed while its box is up resolves to NULL instead of dangling.
+std::queue<UINT8> gPrebattleTriggerGroups;
 void TriggerPrebattleInterface( UINT8 ubResult );
 
 //Save the L.L. for the playerlist into the save game file
@@ -1053,7 +1062,7 @@ void PrepareForPreBattleInterface( GROUP *pPlayerDialogGroup, GROUP *pInitiating
 	if ( pPlayerDialogGroup->usGroupTeam == MILITIA_TEAM )
 	{
 		// force direct transition to autoresolve
-		gfDelayAutoResolveStart = TRUE;
+		gForcedAutoResolveSectors.insert( SECTOR( pPlayerDialogGroup->ubSectorX, pPlayerDialogGroup->ubSectorY ) );
 
 		// We MUST start combat, but donot play quote...
 		InitPreBattleInterface( pInitiatingBattleGroup, TRUE );
@@ -1366,10 +1375,9 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 			}
 		}
 
-		gpInitPrebattleGroup = pGroup;
-
 		if( GetEnemyEncounterCode() == BLOODCAT_AMBUSH_CODE || GetEnemyEncounterCode() == ENTERING_BLOODCAT_LAIR_CODE )
 		{
+			gPrebattleTriggerGroups.push( pGroup->ubGroupID );
 			NotifyPlayerOfBloodcatBattle( pGroup->ubSectorX, pGroup->ubSectorY );
 			return TRUE;
 		}
@@ -1377,19 +1385,25 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 		if( !fCombatAbleMerc )
 		{
 			//Prepare for instant autoresolve.
-			gfDelayAutoResolveStart = TRUE;
+			gForcedAutoResolveSectors.insert( SECTOR( pGroup->ubSectorX, pGroup->ubSectorY ) );
 			gfUsePersistantPBI = TRUE;
+
+			gPrebattleTriggerGroups.push( pGroup->ubGroupID );
+
 			if( fMilitiaPresent )
 			{
-				NotifyPlayerOfInvasionByEnemyForces( pGroup->ubSectorX, pGroup->ubSectorY, 0, TriggerPrebattleInterface );
-
 				// trigger autoresolve if not in city, or this is a militia group
-				if ( pGroup->usGroupTeam == MILITIA_TEAM || GetTownIdForSector( pGroup->ubSectorX, pGroup->ubSectorY ) == BLANK_SECTOR )
+				BOOLEAN fTriggerNow = ( pGroup->usGroupTeam == MILITIA_TEAM || GetTownIdForSector( pGroup->ubSectorX, pGroup->ubSectorY ) == BLANK_SECTOR );
+
+				// exactly one trigger per battle, or the second one consumes another battle's group
+				if( !NotifyPlayerOfInvasionByEnemyForces( pGroup->ubSectorX, pGroup->ubSectorY, 0, fTriggerNow ? NULL : TriggerPrebattleInterface ) )
 				{
-//					CHAR16 str[ 256 ];
-//					UINT16 uiSectorC = L'A' + pGroup->ubSectorY - 1;
-//					swprintf( str, gpStrategicString[ STR_DIALOG_ENEMIES_ATTACK_MILITIA ], uiSectorC, pGroup->ubSectorX );
-//					DoScreenIndependantMessageBox( str, MSG_BOX_FLAG_OK, TriggerPrebattleInterface );
+					// nothing was raised that the player can acknowledge, so nobody else will start this battle
+					fTriggerNow = TRUE;
+				}
+
+				if ( fTriggerNow )
+				{
 					TriggerPrebattleInterface(1);
 				}
 			}
@@ -1420,9 +1434,15 @@ BOOLEAN CheckConditionsForBattle( GROUP *pGroup )
 
 void TriggerPrebattleInterface( UINT8 ubResult )
 {
+	UINT8 ubGroupID = 0;
+	if( !gPrebattleTriggerGroups.empty() )
+	{
+		ubGroupID = gPrebattleTriggerGroups.front();
+		gPrebattleTriggerGroups.pop();
+	}
+
 	StopTimeCompression();
-	SpecialCharacterDialogueEvent( DIALOGUE_SPECIAL_EVENT_TRIGGERPREBATTLEINTERFACE, (UINT32)gpInitPrebattleGroup, 0, 0, 0, 0 );
-	gpInitPrebattleGroup = NULL;
+	SpecialCharacterDialogueEvent( DIALOGUE_SPECIAL_EVENT_TRIGGERPREBATTLEINTERFACE, (UINT32)( ubGroupID ? GetGroup( ubGroupID ) : NULL ), 0, 0, 0, 0 );
 }
 
 
@@ -3118,6 +3138,11 @@ void RemoveAllGroups()
 {
 	// Since we are removing all groups, clear the gpBattleGroup
 	gpBattleGroup = NULL;
+
+	// none of the battles these describe exist any more
+	ClearPendingBattles();
+	gForcedAutoResolveSectors.clear();
+	gPrebattleTriggerGroups = std::queue<UINT8>();
 
 	gfRemovingAllGroups = TRUE;
 	while( gpGroupList )
@@ -6200,6 +6225,7 @@ void CheckCombatInSectorDueToUnusualEnemyArrival( UINT8 aTeam, INT16 sX, INT16 s
 
 		if ( GetEnemyEncounterCode() == BLOODCAT_AMBUSH_CODE || GetEnemyEncounterCode() == ENTERING_BLOODCAT_LAIR_CODE )
 		{
+			gPrebattleTriggerGroups.push( 0 );
 			NotifyPlayerOfBloodcatBattle( sX, sY );
 
 			return;
@@ -6208,19 +6234,26 @@ void CheckCombatInSectorDueToUnusualEnemyArrival( UINT8 aTeam, INT16 sX, INT16 s
 		if ( !fCombatAbleMerc )
 		{
 			//Prepare for instant autoresolve.
-			gfDelayAutoResolveStart = TRUE;
+			gForcedAutoResolveSectors.insert( SECTOR( sX, sY ) );
 			gfUsePersistantPBI = TRUE;
+
+			// no group for this battle - the PBI locates itself by gubSectorIDOfCreatureAttack, set above
+			gPrebattleTriggerGroups.push( 0 );
+
 			if ( fMilitiaPresent )
 			{
-				NotifyPlayerOfInvasionByEnemyForces( sX, sY, 0, TriggerPrebattleInterface );
-
 				// trigger autoresolve if not in city, or this is a militia group
-				if ( aTeam == MILITIA_TEAM || GetTownIdForSector( sX, sY ) == BLANK_SECTOR )
+				BOOLEAN fTriggerNow = ( aTeam == MILITIA_TEAM || GetTownIdForSector( sX, sY ) == BLANK_SECTOR );
+
+				// exactly one trigger per battle, or the second one consumes another battle's group
+				if ( !NotifyPlayerOfInvasionByEnemyForces( sX, sY, 0, fTriggerNow ? NULL : TriggerPrebattleInterface ) )
 				{
-					//					CHAR16 str[ 256 ];
-					//					UINT16 uiSectorC = L'A' + pGroup->ubSectorY - 1;
-					//					swprintf( str, gpStrategicString[ STR_DIALOG_ENEMIES_ATTACK_MILITIA ], uiSectorC, pGroup->ubSectorX );
-					//					DoScreenIndependantMessageBox( str, MSG_BOX_FLAG_OK, TriggerPrebattleInterface );
+					// nothing was raised that the player can acknowledge, so nobody else will start this battle
+					fTriggerNow = TRUE;
+				}
+
+				if ( fTriggerNow )
+				{
 					TriggerPrebattleInterface( 1 );
 				}
 			}

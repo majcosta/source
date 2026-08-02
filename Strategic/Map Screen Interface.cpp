@@ -6309,7 +6309,9 @@ BOOLEAN NotifyPlayerWhenEnemyTakesControlOfImportantSector( INT16 sSectorX, INT1
 }
 
 
-void NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 bSectorZ, MSGBOX_CALLBACK ReturnCallback )
+// returns TRUE if a message box went up that will call ReturnCallback - the wilderness case only
+// prints a screen message, so callers that hang work off the callback have to know the difference
+BOOLEAN NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 bSectorZ, MSGBOX_CALLBACK ReturnCallback )
 {
 	INT16 sSector = 0;
 	INT8 bTownId = 0;
@@ -6319,7 +6321,7 @@ void NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 b
 	// check if below ground
 	if( bSectorZ != 0 )
 	{
-		return;
+		return FALSE;
 	}
 
 	// grab sector value
@@ -6328,7 +6330,7 @@ void NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 b
 	if( StrategicMap[ sSector ].fEnemyControlled == TRUE )
 	{
 		// enemy controlled any ways, leave
-		return;
+		return FALSE;
 	}
 
 	// get the town id
@@ -6342,6 +6344,8 @@ void NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 b
 
 		swprintf( sString, pMapErrorString[ 22 ], sStringA );
 		DoScreenIndependantMessageBox( sString, MSG_BOX_FLAG_OK, ReturnCallback );
+
+		return ReturnCallback != NULL;
 	}
 	else if( bTownId )
 	{
@@ -6350,15 +6354,17 @@ void NotifyPlayerOfInvasionByEnemyForces( INT16 sSectorX, INT16 sSectorY, INT8 b
 
 		swprintf( sString, pMapErrorString[ 23 ], sStringA );
 		DoScreenIndependantMessageBox( sString, MSG_BOX_FLAG_OK, ReturnCallback );
-	}
-	else
-	{
-		// get sector id value
-		GetShortSectorString( sSectorX, sSectorY, sStringA );
 
-		swprintf( sString, pMapErrorString[ 24 ], sStringA );
-		ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, sString );
+		return ReturnCallback != NULL;
 	}
+
+	// get sector id value
+	GetShortSectorString( sSectorX, sSectorY, sStringA );
+
+	swprintf( sString, pMapErrorString[ 24 ], sStringA );
+	ScreenMsg( FONT_MCOLOR_LTYELLOW, MSG_INTERFACE, sString );
+
+	return FALSE;
 }
 
 
