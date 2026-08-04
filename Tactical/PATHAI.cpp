@@ -4244,7 +4244,7 @@ INT32 PlotPath( SOLDIERTYPE *pSold, INT32 sDestGridNo, INT8 bCopyRoute, INT8 bPl
 
 			sTempGrid  = NewGridNo(sTempGrid, DirectionInc( (UINT8)guiPathingData[iCnt]));
 			gfPlotPathEndDirection = GetDirectionToGridNoFromGridNo(sOldGrid, sTempGrid);
-			// Get switch value...
+
 			// One movement step, folded: MovementStepCost charges exactly what the real per-step
 			// deduction does (it calls the same ActionPointCost), and hands back what the next tile
 			// needs to know about this one - the mode we end in and whether this step already covered
@@ -4274,13 +4274,15 @@ INT32 PlotPath( SOLDIERTYPE *pSold, INT32 sDestGridNo, INT8 bCopyRoute, INT8 bPl
 			if (bPlot && ( (gTacticalStatus.uiFlags & TURNBASED) && (gTacticalStatus.uiFlags & INCOMBAT) ) ) // OR USER OPTION ON... ***)
 			{
 				// Footstep-colour budget: how far the path reaches in each stance, using the same
-				// per-tile cost source as everything else so the colours track the real spend.
-				// The one-time run start-up is seeded once in sPointsRun before the loop; passing
-				// each mode as its own previous mode keeps the per-tile start-run from repeating.
-				sPointsWalk  += EstimateActionPointCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], WALKING,  (INT8)iCnt, (INT8)iLastGrid, WALKING );
-				sPointsCrawl += EstimateActionPointCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], CRAWLING, (INT8)iCnt, (INT8)iLastGrid, CRAWLING );
-				sPointsSwat  += EstimateActionPointCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], SWATTING, (INT8)iCnt, (INT8)iLastGrid, SWATTING );
-				sPointsRun   += EstimateActionPointCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], RUNNING,  (INT8)iCnt, (INT8)iLastGrid, RUNNING );
+				// per-tile cost source as everything else so the colours track the real spend. Each
+				// stance is its own hypothetical - the merc moves this whole path in that one stance -
+				// so each passes itself as its own prev mode: no mid-path start-run (the one-time run
+				// start-up is seeded once in sPointsRun before the loop), and no fence reset, since
+				// these budgets never switch stance.
+				sPointsWalk  += MovementStepCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], WALKING,  WALKING  ).sAP;
+				sPointsCrawl += MovementStepCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], CRAWLING, CRAWLING ).sAP;
+				sPointsSwat  += MovementStepCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], SWATTING, SWATTING ).sAP;
+				sPointsRun   += MovementStepCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], RUNNING,  RUNNING  ).sAP;
 			}
 
 			if ( iCnt == 0 && bPlot )
