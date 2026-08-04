@@ -4142,12 +4142,10 @@ INT32 PlotPath( SOLDIERTYPE *pSold, INT32 sDestGridNo, INT8 bCopyRoute, INT8 bPl
 	INT32 iCnt;
 	INT32 sOldGrid=0;
 	INT16 sFootOrderIndex;
-	INT16 sSwitchValue;
 	INT16 sFootOrder[5] = {	GREENSTEPSTART, PURPLESTEPSTART, BLUESTEPSTART, ORANGESTEPSTART, REDSTEPSTART };
 	UINT16 usTileIndex;
 	UINT16 usTileNum;
 	LEVELNODE *pNode;
-	UINT16 usMovementModeToUseForAPs;
 	BOOLEAN	bIgnoreNextCost = FALSE;
 
 	if ( bPlot && gusPathShown )
@@ -4247,56 +4245,27 @@ INT32 PlotPath( SOLDIERTYPE *pSold, INT32 sDestGridNo, INT8 bCopyRoute, INT8 bPl
 			sTempGrid  = NewGridNo(sTempGrid, DirectionInc( (UINT8)guiPathingData[iCnt]));
 			gfPlotPathEndDirection = GetDirectionToGridNoFromGridNo(sOldGrid, sTempGrid);
 			// Get switch value...
-			sSwitchValue = gubWorldMovementCosts[ sTempGrid ][ (INT8)guiPathingData[iCnt] ][ pSold->pathing.bLevel];
-
-			usMovementModeToUseForAPs = usMovementMode;
-
-			// WANNE.WATER: If our soldier is not on the ground level and the tile is a "water" tile, then simply set the tile to "FLAT_GROUND"
-			// This should fix "problems" for special modified maps
-			UINT8 ubTerrainID = gpWorldLevelData[ sTempGrid ].ubTerrainID;
-
-			if ( TERRAIN_IS_WATER( ubTerrainID) && pSold->pathing.bLevel > 0 )
-				ubTerrainID = FLAT_GROUND;
-
-			// ATE - MAKE MOVEMENT ALWAYS WALK IF IN WATER
-			if ( TERRAIN_IS_WATER( ubTerrainID) )
-			{
-				usMovementModeToUseForAPs = WALKING;
-			}
-
-			// The previous tile's mode drives the one-time start-run charge; capture it before
-			// advancing, so this tile's cost sees the prior mode and the next tile sees this one.
+			// One movement step, folded: MovementStepCost charges exactly what the real per-step
+			// deduction does (it calls the same ActionPointCost), and hands back what the next tile
+			// needs to know about this one - the mode we end in and whether this step already covered
+			// the tile after it. Threading usEndMode into the next step's prev mode is what keeps the
+			// cursor estimate and the real spend from drifting, fence hops and water crossings included.
 			const UINT16 usPrevMovementMode = (UINT16)usMovementModeBefore;
-			usMovementModeBefore = usMovementModeToUseForAPs;
 
 			if ( bIgnoreNextCost )
 			{
+				// Fence landing tile: the hop already paid for it and set the post-fence mode, so
+				// charge nothing and leave usMovementModeBefore untouched - the next tile re-charges
+				// start-run off it, on that tile, with that tile's own diagonal x1.4.
 				bIgnoreNextCost = FALSE;
-
-				// This is the fence's landing tile. The real jump ends in a stationary stance
-				// (SoldierGotoStationaryStance in HandleGotoNewGridNo), so the merc is no longer
-				// running here. Record that as the previous mode, so the NEXT tile re-charges the
-				// one-time start-run through ActionPointCost - on that tile, with that tile's own
-				// diagonal x1.4, exactly as the real per-step deduction does. WALKING is just a
-				// non-RUNNING marker; the only thing read from prev mode is "was I running?".
-				// ponytail: the fence post-state is written by hand here. Upgrade path: a typed
-				// "movement step" (fence/climb/door) carrying its own cost + post-state, folded by
-				// one path-summer shared with the real deduction and TacticalAI/Movement.cpp (which
-				// still sums with a frozen prev mode and has the same drift).
-				usMovementModeBefore = WALKING;
 			}
 			else
 			{
-				// Single source of truth: charge exactly what the real per-step movement deducts,
-				// by calling the very same ActionPointCost and threading the simulated previous-tile
-				// mode. No fence-continuation shortcut here - the start-run after a fence is produced
-				// by the reset above landing on the next tile, so it lands on the right tile with the
-				// right diagonal x1.4 instead of the flat approximation EstimateActionPointCost adds.
-				sPoints += ActionPointCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], usMovementModeToUseForAPs, usPrevMovementMode );
+				const StepCost step = MovementStepCost( pSold, sTempGrid, (INT8)guiPathingData[iCnt], usMovementMode, usPrevMovementMode );
+				sPoints += step.sAP;
+				usMovementModeBefore = step.usEndMode;
 
-				// A fence hop covers its landing tile too - skip that tile's separate cost,
-				// mirroring the two-tile path advance in HandleGotoNewGridNo.
-				if ( sSwitchValue == TRAVELCOST_FENCE )
+				if ( step.bExtraTiles > 0 )
 					bIgnoreNextCost = TRUE;
 			}
 
