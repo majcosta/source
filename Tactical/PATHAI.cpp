@@ -1069,8 +1069,11 @@ void AStarPathfinder::ExecuteAStarLogic()
 			return;
 		}
 
-		//calc the cost to move from the current node to here
-		INT16 terrainCost = EstimateActionPointCost( pSoldier, CurrentNode, direction, movementMode, 0, 3 );
+		//calc the cost to move from the current node to here. Same cost source as the real per-step
+		//deduction and the movement estimators; prev mode is the merc's live stance (the search can't
+		//thread a per-tile prior mode). A fence edge costs just the jump here - no flat start-run
+		//surcharge - so the search stops over-pricing a fence hop against a longer walk-around.
+		INT16 terrainCost = MovementStepCost( pSoldier, CurrentNode, direction, movementMode, pSoldier->usAnimState ).sAP;
 
 		if (terrainCost == 100) {
 			if (fFindClimbPoints)

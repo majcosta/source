@@ -290,11 +290,6 @@ INT16 TerrainActionPoints( SOLDIERTYPE *pSoldier, INT32 sGridno, INT8 bDir, INT8
 INT16 ActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, UINT16 usPrevMovementMode );
 // Convenience overload: prev mode = the soldier's current anim state (correct for real, per-step movement).
 INT16 ActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode	);
-// bPathIndex/bPathLength give the fence-continuation context; usPrevMovementMode is the
-// previous tile's mode (see ActionPointCost). Estimators summing a path pass their simulated
-// prior mode; the shorter overload uses the soldier's live anim state.
-INT16 EstimateActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, INT8 bPathIndex, INT8 bPathLength, UINT16 usPrevMovementMode );
-INT16 EstimateActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, INT8 bPathIndex, INT8 bPathLength );
 
 // The cost and after-effects of one movement step - entering sGridNo from direction bDir.
 // A gridno pair carries no step semantics on its own (a fence hop covers two tiles and lands
