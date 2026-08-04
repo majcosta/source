@@ -611,6 +611,10 @@ INT32 InternalGoAsFarAsPossibleTowards(SOLDIERTYPE *pSoldier, INT32 sDesGrid, IN
 
 	sTempDest = pSoldier->sGridNo;
 
+	// The mode we leave each tile in, threaded into the next step's cost - seeded with the live
+	// stance, exactly as the real per-step deduction reads it. This drives the one-time start-run.
+	UINT16 usPrevMovementMode = pSoldier->usAnimState;
+
  for (sLoop = 0; sLoop < (pSoldier->pathing.usPathDataSize - pSoldier->pathing.usPathIndex); sLoop++)
 	{
 	// what is the next gridno in the path?
@@ -663,19 +667,24 @@ INT32 InternalGoAsFarAsPossibleTowards(SOLDIERTYPE *pSoldier, INT32 sDesGrid, IN
 
 	if (gfTurnBasedAI)
 	{
-		// if we're just starting the "costing" process (first gridno)
-		if (sLoop == 0)
-			{
-			if (pSoldier->usUIMovementMode == RUNNING)
-			{
-				sAPCost += GetAPsStartRun( pSoldier ); // changed by SANDRO
-			}
-			}
-
-		// ATE: Direction here?
-		sAPCost += EstimateActionPointCost( pSoldier, sTempDest, (INT8) pSoldier->pathing.usPathingData[sLoop], pSoldier->usUIMovementMode, (INT8) sLoop, (INT8) pSoldier->pathing.usPathDataSize );
+		// One step, folded like the real per-step deduction: MovementStepCost charges the same
+		// ActionPointCost and threads the previous tile's mode, so the one-time start-run is charged
+		// once when we start from a non-running stance - no hand-seeded first tile - and re-charged
+		// automatically after a fence hop or water crossing drops us out of the run.
+		const StepCost step = MovementStepCost( pSoldier, sTempDest, (INT8) pSoldier->pathing.usPathingData[sLoop], pSoldier->usUIMovementMode, usPrevMovementMode );
+		sAPCost += step.sAP;
+		usPrevMovementMode = step.usEndMode;
 
 		bAPsLeft = pSoldier->bActionPoints - sAPCost;
+
+		// A fence hop covers its landing tile too - advance past it so it isn't charged again or
+		// re-tested as its own destination, mirroring the two-tile advance in HandleGotoNewGridNo.
+		// Without this the old code charged the fence tile and its landing tile both.
+		if ( step.bExtraTiles > 0 && (sLoop + 1) < (pSoldier->pathing.usPathDataSize - pSoldier->pathing.usPathIndex) )
+		{
+			sLoop++;
+			sTempDest = NewGridNo( sTempDest, DirectionInc( (UINT8) pSoldier->pathing.usPathingData[sLoop] ) );
+		}
 	}
 
 	// if this gridno is NOT a legal NPC destination
@@ -818,8 +827,9 @@ void SoldierTriesToContinueAlongPath(SOLDIERTYPE *pSoldier)
 
 	usNewGridNo = NewGridNo( pSoldier->sGridNo, DirectionInc( (UINT8)pSoldier->pathing.usPathingData[ pSoldier->pathing.usPathIndex ] ) );
 
-	// Find out how much it takes to move here!
-	bAPCost = EstimateActionPointCost( pSoldier, usNewGridNo, (INT8)pSoldier->pathing.usPathingData[ pSoldier->pathing.usPathIndex ], pSoldier->usUIMovementMode, (INT8) pSoldier->pathing.usPathIndex, (INT8) pSoldier->pathing.usPathDataSize );
+	// Find out how much it takes to move here! Single next step, so prev mode is the live stance -
+	// same as the real per-step deduction reads it in HandleGotoNewGridNo.
+	bAPCost = MovementStepCost( pSoldier, usNewGridNo, (INT8)pSoldier->pathing.usPathingData[ pSoldier->pathing.usPathIndex ], pSoldier->usUIMovementMode, pSoldier->usAnimState ).sAP;
 
 	if (pSoldier->bActionPoints >= bAPCost)
 	{
