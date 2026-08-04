@@ -733,6 +733,35 @@ INT16 EstimateActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, 
 	return (sPoints);
 }
 
+StepCost MovementStepCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, UINT16 usPrevMovementMode )
+{
+	StepCost step;
+
+	// AP comes straight from the real per-step function, so a fold built on this cannot drift
+	// from what movement actually deducts.
+	step.sAP = ActionPointCost( pSoldier, sGridNo, bDir, usMovementMode, usPrevMovementMode );
+	step.sBP = TerrainBreathPoints( pSoldier, sGridNo, bDir, usMovementMode );
+	// ponytail: the weapon-weight breath term HandleGotoNewGridNo adds on top of TerrainBreathPoints
+	// is not folded in here. No caller reads sBP yet; add it when one wires breath through this fold.
+
+	const INT16 sSwitchValue = gubWorldMovementCosts[ sGridNo ][ bDir ][ pSoldier->pathing.bLevel ];
+	const BOOLEAN fFence = ( sSwitchValue == TRAVELCOST_FENCE );
+
+	// Water on the ground level forces a walk (see ActionPointCost); above it, water reads as flat
+	// ground. A fence hop lands stationary and a forced walk drops out of the run, so either one
+	// ends the run - the next step re-charges the one-time start-run through its own prev mode. This
+	// one rule replaces the "reset to WALKING" the path folds used to carry by hand, per tile.
+	const UINT8 ubTerrainID = gpWorldLevelData[ sGridNo ].ubTerrainID;
+	const BOOLEAN fWaterWalk = TERRAIN_IS_WATER( ubTerrainID ) && pSoldier->pathing.bLevel == 0;
+
+	step.usEndMode = ( fFence || fWaterWalk ) ? WALKING : usMovementMode;
+
+	// A fence hop covers its landing tile too (HandleGotoNewGridNo advances the path index twice),
+	// so a fold skips one extra tile after a fence. No other step type covers more than its own tile.
+	step.bExtraTiles = fFence ? 1 : 0;
+
+	return step;
+}
 
 
 BOOLEAN EnoughPoints( SOLDIERTYPE *pSoldier, INT16 sAPCost, INT32 iBPCost, BOOLEAN fDisplayMsg )

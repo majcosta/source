@@ -295,6 +295,24 @@ INT16 ActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 u
 // prior mode; the shorter overload uses the soldier's live anim state.
 INT16 EstimateActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, INT8 bPathIndex, INT8 bPathLength, UINT16 usPrevMovementMode );
 INT16 EstimateActionPointCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, INT8 bPathIndex, INT8 bPathLength );
+
+// The cost and after-effects of one movement step - entering sGridNo from direction bDir.
+// A gridno pair carries no step semantics on its own (a fence hop covers two tiles and lands
+// stationary; crossing water forces a walk), so a path-summer that only knows "which tile next"
+// keeps re-deriving that hidden state and drifting from the real per-step deduction. This packs
+// it into the return: what the step costs, and what the NEXT step needs to know about this one.
+struct StepCost
+{
+	INT16  sAP;			// AP the real per-step movement would deduct for this step
+	INT16  sBP;			// breath the step costs (base terrain/mode; see MovementStepCost)
+	UINT16 usEndMode;	// mode to feed the next step as its prev mode; fence/water end non-running
+	INT8   bExtraTiles;	// path indices this step covers beyond the first (fence hop = 1, else 0)
+};
+
+// Fold this over a path, threading each step's usEndMode into the next step's usPrevMode and
+// advancing the path index by 1 + bExtraTiles, and the running total equals what movement spends.
+StepCost MovementStepCost( SOLDIERTYPE *pSoldier, INT32 sGridNo, INT8 bDir, UINT16 usMovementMode, UINT16 usPrevMovementMode );
+
 BOOLEAN SelectedMercCanAffordMove(	);
 
 BOOLEAN EnoughPoints( SOLDIERTYPE *pSoldier, INT16 sAPCost, INT32 iBPCost, BOOLEAN fDisplayMsg );
