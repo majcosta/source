@@ -1562,6 +1562,9 @@ FLOAT   GetGunOverheatJamPercentage( FLOAT usTemperature, UINT16 usIndx )
 
 BOOLEAN FireWeapon( SOLDIERTYPE *pSoldier , INT32 sTargetGridNo )
 {
+	// perf probe: player gunshot drops a delimiter in perf_probe.log (remove with probe)
+	if ( pSoldier && pSoldier->bTeam == gbPlayerNum ) { extern void ProbePerfMark( const char* ); ProbePerfMark( "gunshot" ); }
+
 	// ignore passed in target gridno for now
 	DebugMsg(TOPIC_JA2,DBG_LEVEL_3,String("FireWeapon"));
 	// If realtime and we are reloading - do not fire until counter is done!

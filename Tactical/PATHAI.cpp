@@ -379,6 +379,16 @@ static path_t * pClosedHead;
 #define ORANGESTEPSTART		64
 
 INT16 gubNPCAPBudget = 0;
+// Optional cost ceiling (in AP) for a single A* search, used for branch-and-bound when a
+// caller plots several candidate destinations and only wants the cheapest: bounding each
+// search by the best cost found so far lets a hopeless candidate bail instead of flooding
+// the whole reachable area. 0 = unbounded. Same prune shape as maxAPBudget; behavior-
+// preserving because pruned nodes always exceed the current best, so the min is still found.
+INT16 gsUIPlotBranchBound = 0;
+// Cursor-hint-only AP cap for FindAdjacentGridEx (0 = use the merc's full AP). The door/vault
+// cursor sets this so hovering an unreachable interactive tile fails fast instead of flooding
+// the merc's whole reach every frame; the actual click leaves it 0 and keeps full-AP pathing.
+INT16 gsInteractHintAPCap = 0;
 UINT16 gusNPCMovementMode;
 UINT8 gubNPCDistLimit = 0;
 BOOLEAN gfNPCCircularDistLimit = FALSE;
@@ -1145,7 +1155,13 @@ void AStarPathfinder::ExecuteAStarLogic()
 			continue;
 		}
 
-		if (maxAPBudget && AStarG > maxAPBudget * 100) 
+		if (maxAPBudget && AStarG > maxAPBudget * 100)
+		{
+			continue;
+		}
+
+		// branch-and-bound ceiling for multi-candidate UI plots (0 = unbounded)
+		if (gsUIPlotBranchBound && AStarG > (INT32)gsUIPlotBranchBound * 100)
 		{
 			continue;
 		}
@@ -4134,8 +4150,24 @@ void ErasePath(char bEraseOldOne)
 
 
 
+// perf probe: RAII timer covering every return path of PlotPath (remove with probe)
+extern UINT64 gProbePlotTicks; extern UINT32 gProbePlotCalls;
+#include <cstdio>
+namespace { struct ProbePlotTimer {
+	LARGE_INTEGER a; INT32 src, dest; INT16 budget;
+	ProbePlotTimer(INT32 s, INT32 d, INT16 b):src(s),dest(d),budget(b){ QueryPerformanceCounter(&a); ++gProbePlotCalls; }
+	~ProbePlotTimer(){
+		LARGE_INTEGER b2, f; QueryPerformanceCounter(&b2); QueryPerformanceFrequency(&f);
+		const UINT64 dt = (UINT64)(b2.QuadPart - a.QuadPart);
+		gProbePlotTicks += dt;
+		const UINT32 us = f.QuadPart ? (UINT32)(dt * 1000000ULL / (UINT64)f.QuadPart) : 0;
+		if ( us > 3000 ) { FILE* pf = fopen("perf_probe.log","a"); if (pf){ fprintf(pf,"  SLOW PlotPath src=%d dest=%d budget=%d bound=%d us=%u\n",(int)src,(int)dest,(int)budget,(int)gsUIPlotBranchBound,us); fclose(pf); } }
+	}
+}; }
+
 INT32 PlotPath( SOLDIERTYPE *pSold, INT32 sDestGridNo, INT8 bCopyRoute, INT8 bPlot, INT8 bStayOn, UINT16 usMovementMode, INT8 bStealth, INT8 bReverse , INT16 sAPBudget)
 {
+	ProbePlotTimer _ppt( pSold ? pSold->sGridNo : -1, sDestGridNo, sAPBudget );   // perf probe
 	INT16 sPoints=0,sAnimCost=0;
 	INT16 sPointsWalk=0,sPointsCrawl=0,sPointsRun=0,sPointsSwat=0;
 	INT32 iLastGrid, sTempGrid;

@@ -5400,6 +5400,14 @@ BOOLEAN TeamMemberNear( INT8 bTeam, INT32 sGridNo, INT32 iRange )
 	return(FALSE);
 }
 
+// Tightest positive of the AP cap and the best-so-far cost (0 = unbounded). See FindAdjacentGridEx.
+static INT16 UIPlotBound( INT32 sBestSoFar, INT16 sApCap )
+{
+	INT16 b = ( sApCap > 0 ) ? sApCap : 0;
+	if ( sBestSoFar > 0 && ( b == 0 || (INT16)sBestSoFar < b ) ) b = (INT16)sBestSoFar;
+	return b;
+}
+
 INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirection, INT32 *psAdjustedGridNo, BOOLEAN fForceToPerson, BOOLEAN fDoor, bool allow_diagonal )
 {
     // psAdjustedGridNo gets the original gridno or the new one if updated
@@ -5421,6 +5429,22 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
     BOOLEAN		fCheckGivenGridNo = TRUE;
     UINT8		ubTestDirection;
     EXITGRID    	ExitGrid;
+
+    // This function plots a path to several candidate approach tiles and keeps the cheapest.
+    // Two bounds cap each search (gsUIPlotBranchBound, whichever is tighter):
+    //   1. the AP the merc actually has - the budget the callers already pass but the A* has
+    //      always ignored. Pathing to an UNREACHABLE target (e.g. a door walled off from the
+    //      merc) otherwise floods the whole reachable area every step. Realtime only, so
+    //      turn-based combat keeps exact behaviour.
+    //   2. branch-and-bound: the best cost found so far, so a candidate that can't win bails.
+    // Both only ever exclude tiles costing more than a tile we'd already accept, so the winner
+    // is unchanged. Reset to 0 after every plot.
+    extern INT16 gsUIPlotBranchBound;
+    extern INT16 gsInteractHintAPCap;
+    const bool fRealtimeUIPlot = ( gTacticalStatus.uiFlags & REALTIME ) || !( gTacticalStatus.uiFlags & INCOMBAT );
+    // Full AP by default; the cursor hint tightens it via gsInteractHintAPCap (see PATHAI.cpp).
+    const INT16 apCap = !fRealtimeUIPlot ? 0
+        : ( gsInteractHintAPCap > 0 && gsInteractHintAPCap < pSoldier->bActionPoints ? gsInteractHintAPCap : pSoldier->bActionPoints );
 
     // Set default direction
     if (pubDirection)
@@ -5537,7 +5561,9 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
 
         if ( fCheckGivenGridNo )
         {
+            gsUIPlotBranchBound = UIPlotBound( sClosest, apCap );
             sDistance = PlotPath( pSoldier, sGridNo,    NO_COPYROUTE, NO_PLOT, TEMPORARY, (INT16)pSoldier->usUIMovementMode, NOT_STEALTH, FORWARD, pSoldier->bActionPoints );
+            gsUIPlotBranchBound = 0;
 
             if ( sDistance > 0 )
             {
@@ -5550,11 +5576,31 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
         }
     }
 	
-    for (INT8 cnt = 0; cnt < (allow_diagonal ? NUM_WORLD_DIRECTIONS : 4); ++cnt)
+	// Visit the approach tiles nearest the merc first. For a door, that is the merc's
+	// own side - the cheap, reachable one - so it seeds the branch-and-bound bound
+	// (gsUIPlotBranchBound) before the far/unreachable side gets to plot, and that side
+	// then prunes at once instead of flooding the whole reachable area. Ordering only:
+	// the cheapest winner is unchanged; on an exact AP tie the closer tile wins now.
+	const INT8 sNumDirs = (allow_diagonal ? NUM_WORLD_DIRECTIONS : 4);
+	UINT8 ubDirOrder[NUM_WORLD_DIRECTIONS];
+	INT16 sDirDist[NUM_WORLD_DIRECTIONS];
+	for (INT8 i = 0; i < sNumDirs; ++i)
+	{
+		ubDirOrder[i] = (allow_diagonal ? (UINT8)i : sDirs[i]);
+		sDirDist[i]   = PythSpacesAway( pSoldier->sGridNo, NewGridNo( sGridNo, DirectionInc( ubDirOrder[i] ) ) );
+	}
+	for (INT8 i = 1; i < sNumDirs; ++i)
+	{
+		const UINT8 ubD = ubDirOrder[i]; const INT16 sK = sDirDist[i]; INT8 j = i - 1;
+		while (j >= 0 && sDirDist[j] > sK) { sDirDist[j+1] = sDirDist[j]; ubDirOrder[j+1] = ubDirOrder[j]; --j; }
+		sDirDist[j+1] = sK; ubDirOrder[j+1] = ubD;
+	}
+
+    for (INT8 cnt = 0; cnt < sNumDirs; ++cnt)
     {
-		ubTestDirection = (allow_diagonal ? cnt : sDirs[cnt]);
+		ubTestDirection = ubDirOrder[cnt];
 		// MOVE OUT TWO DIRECTIONS
-        sSpot = NewGridNo( sGridNo, DirectionInc(ubTestDirection) );     
+        sSpot = NewGridNo( sGridNo, DirectionInc(ubTestDirection) );
 
         // For switches, ALLOW them to walk through walls to reach it....
         if ( pDoor && pDoor->fFlags & STRUCTURE_SWITCH )
@@ -5589,14 +5635,14 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
             // Refuse the south and north and west  directions if our orientation is top-right
             if ( ubWallOrientation == OUTSIDE_TOP_RIGHT || ubWallOrientation == INSIDE_TOP_RIGHT )
             {
-                if ( sDirs[ cnt ] == NORTH || sDirs[ cnt ] == WEST || sDirs[ cnt ] == SOUTH )
+                if ( ubTestDirection == NORTH || ubTestDirection == WEST || ubTestDirection == SOUTH )
                     continue;
             }
 
             // Refuse the north and west and east directions if our orientation is top-right
             if ( ubWallOrientation == OUTSIDE_TOP_LEFT || ubWallOrientation == INSIDE_TOP_LEFT )
             {
-                if ( sDirs[ cnt ] == NORTH || sDirs[ cnt ] == WEST || sDirs[ cnt ] == EAST )
+                if ( ubTestDirection == NORTH || ubTestDirection == WEST || ubTestDirection == EAST )
                     continue;
             }
         }
@@ -5618,6 +5664,7 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
         // don't store path, just measure it
         ubDir = (UINT8)GetDirectionToGridNoFromGridNo( sSpot, sGridNo );
 
+        gsUIPlotBranchBound = UIPlotBound( sClosest, apCap );
         if ( ( NewOKDestinationAndDirection( pSoldier, sSpot, ubDir, TRUE, pSoldier->pathing.bLevel ) > 0 ) &&
                 ( ( sDistance = PlotPath( pSoldier, sSpot,  NO_COPYROUTE, NO_PLOT, TEMPORARY, (INT16)pSoldier->usUIMovementMode, NOT_STEALTH, FORWARD, pSoldier->bActionPoints ) ) > 0 ) )
         {
@@ -5628,7 +5675,33 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
                 sCloseGridNo = sSpot;
             }
         }
+        gsUIPlotBranchBound = 0;
     }
+	// TEMP door-hover diagnostic: why did we fail to find a reachable approach?
+	if ( fDoor && gsInteractHintAPCap != 0 && sClosest == -1 )
+	{
+		FILE* pfD = fopen( "perf_probe.log", "a" );
+		if ( pfD )
+		{
+			const UINT8 wo = pDoor ? pDoor->ubWallOrientation : 255;
+			fprintf( pfD, "DOORADJ door=%d merc=%d orient=%d numDirs=%d\n", (int)sGridNo, (int)pSoldier->sGridNo, (int)wo, (int)sNumDirs );
+			for ( INT8 dbg = 0; dbg < 4; ++dbg )
+			{
+				const UINT8 dd = sDirs[dbg];
+				const INT32 sp = NewGridNo( sGridNo, DirectionInc( dd ) );
+				const INT32 mc = gubWorldMovementCosts[ sp ][ dd ][ pSoldier->pathing.bLevel ];
+				bool ori = false;
+				if ( pDoor ) {
+					if ( ( wo == OUTSIDE_TOP_RIGHT || wo == INSIDE_TOP_RIGHT ) && ( dd == NORTH || dd == WEST || dd == SOUTH ) ) ori = true;
+					if ( ( wo == OUTSIDE_TOP_LEFT  || wo == INSIDE_TOP_LEFT  ) && ( dd == NORTH || dd == WEST || dd == EAST  ) ) ori = true;
+				}
+				const UINT8 bd = (UINT8)GetDirectionToGridNoFromGridNo( sp, sGridNo );
+				const INT32 ok = NewOKDestinationAndDirection( pSoldier, sp, bd, TRUE, pSoldier->pathing.bLevel );
+				fprintf( pfD, "   dir=%d spot=%d cost=%d blocked=%d oriFilt=%d okDest=%d\n", (int)dd, (int)sp, (int)mc, (int)( mc >= TRAVELCOST_BLOCKED ), (int)ori, (int)ok );
+			}
+			fclose( pfD );
+		}
+	}
 	if (sGridNoProne != -1)
 	{
 		for (INT8 cnt = 0; cnt < (allow_diagonal ? NUM_WORLD_DIRECTIONS : 4); ++cnt)
@@ -5699,6 +5772,7 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
 			// don't store path, just measure it
 			ubDir = (UINT8)GetDirectionToGridNoFromGridNo(sSpot, sGridNoProne);
 
+			gsUIPlotBranchBound = UIPlotBound( sClosest, apCap );
 			if ((NewOKDestinationAndDirection(pSoldier, sSpot, ubDir, TRUE, pSoldier->pathing.bLevel) > 0) &&
 				((sDistance = PlotPath(pSoldier, sSpot, NO_COPYROUTE, NO_PLOT, TEMPORARY, (INT16)pSoldier->usUIMovementMode, NOT_STEALTH, FORWARD, pSoldier->bActionPoints)) > 0))
 			{
@@ -5711,6 +5785,7 @@ INT32 FindAdjacentGridEx( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 *pubDirect
 					if (psAdjustedGridNo) *psAdjustedGridNo = sGridNoProne;
 				}
 			}
+			gsUIPlotBranchBound = 0;
 		}
 	}
 

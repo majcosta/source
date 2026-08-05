@@ -1,4 +1,21 @@
 #include "builddefines.h"
+#include "message.h"	// perf probe: ScreenMsg message-type constants (remove with probe)
+
+// perf probe: cumulative time + call count in PlotPath (all pathing) (remove with probe)
+#include <cstdio>
+UINT64 gProbePlotTicks = 0;
+UINT32 gProbePlotCalls = 0;
+// perf probe: append a delimiter line to the log (called on player weapon fire)
+void ProbePerfMark( const char* tag )
+{
+	FILE* pf = fopen( "perf_probe.log", "a" );
+	if ( pf ) { fprintf( pf, "==== MARK: %s ====\n", tag ? tag : "" ); fclose( pf ); }
+}
+void ProbeSeedLog( INT32 merc, INT32 door, INT32 seedSpot, int dir, int ok, int seedCost )
+{
+	FILE* pf = fopen( "perf_probe.log", "a" );
+	if ( pf ) { fprintf( pf, "  SEED merc=%d door=%d seedSpot=%d dir=%d ok=%d seedCost=%d\n", (int)merc, (int)door, (int)seedSpot, dir, ok, seedCost ); fclose( pf ); }
+}
 ///////////////////////////
 // C file include here
 #include "Render Z.h"
@@ -3146,6 +3163,22 @@ UINT32 cnt = 0;
 
 	gfRenderFullThisFrame = FALSE;
 
+	// perf probe: report render fps + how many frames did a FULL world blit ~1/s (remove after measuring)
+	static UINT32 guiRProbeTime = 0, guiRProbeFrames = 0, guiRProbeFull = 0;
+	++guiRProbeFrames;
+	{
+		const UINT32 uiNow = GetJA2Clock();
+		if ( uiNow - guiRProbeTime > 1000 )
+		{
+			LARGE_INTEGER liFreq; QueryPerformanceFrequency( &liFreq );
+			const UINT32 uiPlotUs = liFreq.QuadPart ? (UINT32)( gProbePlotTicks * 1000000ULL / (UINT64)liFreq.QuadPart ) : 0;
+			ScreenMsg( FONT_MCOLOR_LTGREEN, MSG_INTERFACE, L"fps:%d full/s:%d | PlotPath calls/s:%d us/s:%d", guiRProbeFrames, guiRProbeFull, gProbePlotCalls, uiPlotUs );
+			FILE* pfLog = fopen( "perf_probe.log", "a" );
+			if ( pfLog ) { fprintf( pfLog, "t=%u fps=%d full/s=%d PlotPath_calls/s=%d us/s=%u\n", (unsigned)uiNow, guiRProbeFrames, guiRProbeFull, gProbePlotCalls, uiPlotUs ); fclose( pfLog ); }
+			guiRProbeFrames = 0; guiRProbeFull = 0; gProbePlotTicks = 0; gProbePlotCalls = 0; guiRProbeTime = uiNow;
+		}
+	}
+
 	// If we are testing renderer, set background to pink!
 	if ( gTacticalStatus.uiFlags & DEBUGCLIFFS )
 	{
@@ -3216,6 +3249,7 @@ UINT32 cnt = 0;
 	if(gRenderFlags&RENDER_FLAG_FULL)
 	{
 		gfRenderFullThisFrame = TRUE;
+		++guiRProbeFull;   // perf probe
 
 		gfTopMessageDirty = TRUE;
 
