@@ -1,3 +1,20 @@
+#include "message.h"	// perf probe: ScreenMsg message-type constants (remove with probe)
+
+// perf probe: cumulative time + call count in PlotPath (all pathing) (remove with probe)
+#include <cstdio>
+UINT64 gProbePlotTicks = 0;
+UINT32 gProbePlotCalls = 0;
+// perf probe: append a delimiter line to the log (called on player weapon fire)
+void ProbePerfMark( const char* tag )
+{
+	FILE* pf = fopen( "perf_probe.log", "a" );
+	if ( pf ) { fprintf( pf, "==== MARK: %s ====\n", tag ? tag : "" ); fclose( pf ); }
+}
+void ProbeSeedLog( INT32 merc, INT32 door, INT32 seedSpot, int dir, int ok, int seedCost )
+{
+	FILE* pf = fopen( "perf_probe.log", "a" );
+	if ( pf ) { fprintf( pf, "  SEED merc=%d door=%d seedSpot=%d dir=%d ok=%d seedCost=%d\n", (int)merc, (int)door, (int)seedSpot, dir, ok, seedCost ); fclose( pf ); }
+}
 ///////////////////////////
 // C file include here
 #include "Render Z.h"
@@ -1180,62 +1197,6 @@ inline static UINT16 * GetShadeTable(LEVELNODE * pNode, SOLDIERTYPE * pSoldier, 
 
 
 
-// Land gradient helper (Tier A of lightingsystem.md).
-// Fetches ubShadeLevel of the land nodes of the own tile and of its east / south / southeast
-// neighbors for the bilinear corner lattice used by Blt8BPPDataTo16BPPBufferTransZClipLandGrad.
-// The light field is bilinear in CELL space, and the cell lattice is diagonal on screen
-// ( FromCellToScreenCoordinates: sx = 2cx-2cy, sy = cx+cy; one cell = 10 world units, so a
-// +X cell is screen (+20,+10) and a +Y cell (-20,+10) ). So a land pixel's shade comes from
-// the 4 cells surrounding wherever it falls in that lattice, NOT the corners of its own rect.
-// pPatch[ (iDX+1)*4 + (iDY+1) ] = land shade of grid (x+iDX, y+iDY), iDX/iDY in -1..+2
-// ( index 5 = own cell ). A 40x20 land image spans about -0.5..1.5 cells in both lattice
-// axes, so 4x4 cells cover it; the blitter clamps anything beyond. Out-of-bounds cells keep
-// the own shade so the map edge cannot create a seam.
-static BOOLEAN GetLandGradShades( LEVELNODE *pNode, INT32 iGridNo, INT16 *pPatch, UINT16 *piTint )
-{
-	LEVELNODE	*pLand;
-	INT16		 iOwnShade;
-	INT32		 iX, iY, iNeigh, iDX, iDY;
-
-	if ( gGameSettings.fOptions[TOPTION_IMPROVED_LIGHTING] == false )
-	{
-		return false;
-	}
-
-	// Own shade: use the very node being blitted so the flat-shade fast path and the
-	// corner lattice agree with the caller's pShadeCurrent assignment
-	iOwnShade = (INT16)( pNode->ubShadeLevel & 0x0f );
-	*piTint   = (UINT16)( pNode->ubShadeLevel & 0x30 );
-
-	// pPatch[(iDX+1)*4 + (iDY+1)] = shade of grid (x+iDX, y+iDY); index 5 = own cell
-	// seed whole patch with own shade; real neighbours overwritten below
-	 for ( iNeigh = 0; iNeigh < 16; iNeigh++ )
-	 {
-	  pPatch[iNeigh] = iOwnShade;
-	 }
-
-	iX = iGridNo % WORLD_COLS;
-	iY = iGridNo / WORLD_COLS;
-
-	// 4x4 cell block; out-of-map cells keep the seeded own shade (no map-edge seam)
-	for ( iDX = -1; iDX <= 2; iDX++ )
-	{
-		for ( iDY = -1; iDY <= 2; iDY++ )
-		{
-			if ( (iDX == 0) && (iDY == 0) )
-				continue;
-			if ( (iX + iDX < 0) || (iX + iDX >= WORLD_COLS) || (iY + iDY < 0) || (iY + iDY >= WORLD_ROWS) )
-				continue;
-			iNeigh = MAPROWCOLTOPOS( (iY + iDY), (iX + iDX) );
-			pLand = gpWorldLevelData[iNeigh].pLandHead;
-			if ( pLand != NULL )
-				pPatch[ (iDX+1)*4 + (iDY+1) ] = (INT16)( pLand->ubShadeLevel & 0x0f );
-		}
-	}
-
-	return( TRUE );
-}
-
 /* 
 MONSTERS BE HERE!
 */
@@ -1302,9 +1263,6 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 	INT16					sZOffsetX = -1;
 	INT16					sZOffsetY = -1;
 	BOOLEAN				fIntensityBlitter;
-	BOOLEAN						 fGradientBlitter;
-	INT16						 iGradPatch[16];
-	UINT16					 usGradTint;
 	INT16						gsForceSoldierZLevel;
 	ROTTING_CORPSE	*pCorpse = NULL;
 	BOOLEAN				fUseTileElem;
@@ -1483,7 +1441,6 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 							fTranslucencyType = TRUE;
 							uiAniTileFlags = 0;
 							sZStripIndex = -1;
-							fGradientBlitter = FALSE;
 
 							uiLevelNodeFlags = pNode->uiFlags;
 
@@ -1856,20 +1813,12 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 							case TILES_STATIC_LAND:
 
 								sZLevel = LandZLevel(iTempPosX_M, iTempPosY_M);
-
-								// Per-pixel land shade gradient (lightingsystem.md Tier A)
-                                if ( GetLandGradShades( pNode, uiTileIndex, iGradPatch, &usGradTint ) )
-                                    fGradientBlitter = TRUE;
 								break;
 
 							case TILES_STATIC_OBJECTS:
 
 								// ATE: Modified to use constant z level, as these are same level as land items
 								sZLevel = ObjectZLevel(TileElem, pNode, uiTileElemFlags, iTempPosX_M, iTempPosY_M, sWorldY);
-
-								// Per-pixel land shade gradient (Tier A): ground sprites (roads, foliage) share the land lattice
-								if ( GetLandGradShades( pNode, uiTileIndex, iGradPatch, &usGradTint ) )
-									fGradientBlitter = TRUE;
 								break;
 
 							case TILES_STATIC_STRUCTURES:
@@ -1929,10 +1878,6 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 
 								sZLevel = LandZLevel(iTempPosX_M, iTempPosY_M);
 								uiDirtyFlags = BGND_FLAG_SINGLE | BGND_FLAG_ANIMATED;
-
-								// Per-pixel land shade gradient (lightingsystem.md Tier A)
-                                if ( GetLandGradShades( pNode, uiTileIndex, iGradPatch, &usGradTint ) )
-                                    fGradientBlitter = TRUE;
 								break;
 							case TILES_DYNAMIC_SHADOWS:
 
@@ -2737,23 +2682,12 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 													}
 													else
 													{
-														if (fGradientBlitter)
-														{
-															// Per-pixel land shade gradient (Tier A): own/E/S/SE corner lattice, Z write on
-															Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, &gClippingRect, TRUE);
-														}
-														else
-														{
-															Blt8BPPDataTo16BPPBufferTransZClip((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
-														}
+														Blt8BPPDataTo16BPPBufferTransZClip((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
 													}
 												}
 												else
 												{
-													if (fGradientBlitter)
-														Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, &gClippingRect, FALSE);
-													else
-														Blt8BPPDataTo16BPPBufferTransZNBClip((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
+													Blt8BPPDataTo16BPPBufferTransZNBClip((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
 												}
 
 												if ((uiLevelNodeFlags & LEVELNODE_UPDATESAVEBUFFERONCE))
@@ -2761,21 +2695,15 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 													pSaveBuf = LockVideoSurface(guiSAVEBUFFER, &uiSaveBufferPitchBYTES);
 
 													// BLIT HERE
-													if (fGradientBlitter)
-														Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pSaveBuf, uiSaveBufferPitchBYTES, gpZBuffer, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, &gClippingRect, TRUE);
-													else
-														Blt8BPPDataTo16BPPBufferTransZClip((UINT16*)pSaveBuf, uiSaveBufferPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
+													Blt8BPPDataTo16BPPBufferTransZClip((UINT16*)pSaveBuf, uiSaveBufferPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
 
 													UnLockVideoSurface(guiSAVEBUFFER);
 												}
+
 											}
 											else
-											{
-												if ( fGradientBlitter )
-													Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pDestBuf, uiDestPitchBYTES, NULL, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, &gClippingRect, FALSE);
-												else
-													Blt8BPPDataTo16BPPBufferTransparentClip((UINT16*)pDestBuf, uiDestPitchBYTES, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
-											}
+												Blt8BPPDataTo16BPPBufferTransparentClip((UINT16*)pDestBuf, uiDestPitchBYTES, hVObject, sXPos, sYPos, usImageIndex, &gClippingRect);
+
 										}
 										else if (bBlitClipVal == FALSE)
 										{
@@ -2987,41 +2915,26 @@ static void RenderTiles(UINT32 uiFlags, INT32 iStartPointX_M, INT32 iStartPointY
 													}
 													else
 													{
-														if (fGradientBlitter)
-															Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, NULL, TRUE);
-														else
-															Blt8BPPDataTo16BPPBufferTransZ((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex);
+														Blt8BPPDataTo16BPPBufferTransZ((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex);
 													}
 												}
 												else
-												{
-													if (fGradientBlitter)
-														Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, NULL, FALSE);
-													else
-														Blt8BPPDataTo16BPPBufferTransZNB((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex);
-												}
+													Blt8BPPDataTo16BPPBufferTransZNB((UINT16*)pDestBuf, uiDestPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex);
+
 
 												if ((uiLevelNodeFlags & LEVELNODE_UPDATESAVEBUFFERONCE))
 												{
 													pSaveBuf = LockVideoSurface(guiSAVEBUFFER, &uiSaveBufferPitchBYTES);
 
 													// BLIT HERE
-													if (fGradientBlitter)
-														Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pSaveBuf, uiSaveBufferPitchBYTES, gpZBuffer, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, NULL, TRUE);
-													else
-														Blt8BPPDataTo16BPPBufferTransZ((UINT16*)pSaveBuf, uiSaveBufferPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex);
+													Blt8BPPDataTo16BPPBufferTransZ((UINT16*)pSaveBuf, uiSaveBufferPitchBYTES, gpZBuffer, sZLevel, hVObject, sXPos, sYPos, usImageIndex);
 
 													UnLockVideoSurface(guiSAVEBUFFER);
 												}
 
 											}
 											else
-											{
-												if ( fGradientBlitter )
-													Blt8BPPDataTo16BPPBufferTransZClipLandGrad((UINT16*)pDestBuf, uiDestPitchBYTES, NULL, sZLevel, hVObject, iGradPatch, usGradTint, sXPos, sYPos, usImageIndex, NULL, FALSE);
-												else
-													Blt8BPPDataTo16BPPBufferTransparent((UINT16*)pDestBuf, uiDestPitchBYTES, hVObject, sXPos, sYPos, usImageIndex);
-											}
+												Blt8BPPDataTo16BPPBufferTransparent((UINT16*)pDestBuf, uiDestPitchBYTES, hVObject, sXPos, sYPos, usImageIndex);
 										}
 									}
 
@@ -3249,6 +3162,22 @@ UINT32 cnt = 0;
 
 	gfRenderFullThisFrame = FALSE;
 
+	// perf probe: report render fps + how many frames did a FULL world blit ~1/s (remove after measuring)
+	static UINT32 guiRProbeTime = 0, guiRProbeFrames = 0, guiRProbeFull = 0;
+	++guiRProbeFrames;
+	{
+		const UINT32 uiNow = GetJA2Clock();
+		if ( uiNow - guiRProbeTime > 1000 )
+		{
+			LARGE_INTEGER liFreq; QueryPerformanceFrequency( &liFreq );
+			const UINT32 uiPlotUs = liFreq.QuadPart ? (UINT32)( gProbePlotTicks * 1000000ULL / (UINT64)liFreq.QuadPart ) : 0;
+			ScreenMsg( FONT_MCOLOR_LTGREEN, MSG_INTERFACE, L"fps:%d full/s:%d | PlotPath calls/s:%d us/s:%d", guiRProbeFrames, guiRProbeFull, gProbePlotCalls, uiPlotUs );
+			FILE* pfLog = fopen( "perf_probe.log", "a" );
+			if ( pfLog ) { fprintf( pfLog, "t=%u fps=%d full/s=%d PlotPath_calls/s=%d us/s=%u\n", (unsigned)uiNow, guiRProbeFrames, guiRProbeFull, gProbePlotCalls, uiPlotUs ); fclose( pfLog ); }
+			guiRProbeFrames = 0; guiRProbeFull = 0; gProbePlotTicks = 0; gProbePlotCalls = 0; guiRProbeTime = uiNow;
+		}
+	}
+
 	// If we are testing renderer, set background to pink!
 	if ( gTacticalStatus.uiFlags & DEBUGCLIFFS )
 	{
@@ -3319,6 +3248,7 @@ UINT32 cnt = 0;
 	if(gRenderFlags&RENDER_FLAG_FULL)
 	{
 		gfRenderFullThisFrame = TRUE;
+		++guiRProbeFull;   // perf probe
 
 		gfTopMessageDirty = TRUE;
 
@@ -3348,12 +3278,8 @@ UINT32 cnt = 0;
 	}
 	else if(gRenderFlags&RENDER_FLAG_MARKED)
 	{
-		// FIXME: RenderMarkedWorld() causes plenty of difficult to debug visual glitches with lighting on dark maps
-		// such as rocks, rubble and sandbags not updating their light level when a merc with a fake light active walks towards them
-		// Easier to just rerender the whole screen for now, which fixes it. Fortunately we're not in 1999 anymore
 		ResetLayerOptimizing();
-		RenderStaticWorld(); 
-		//RenderMarkedWorld();
+		RenderMarkedWorld();
 		if(!(gRenderFlags&RENDER_FLAG_SAVEOFF))
 			UpdateSaveBuffer();
 

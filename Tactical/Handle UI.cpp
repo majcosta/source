@@ -4230,14 +4230,35 @@ INT8 DrawUIMovementPath( SOLDIERTYPE *pSoldier, INT32 usMapPos, UINT32 uiFlags )
 		// We should not have null here if we are given this flag...
 		if ( pIntTile != NULL )
 		{
+			// Cursor hint only: bound these plots so hovering an UNREACHABLE interactive tile
+			// (a door/window walled off from the merc) fails fast instead of flooding the merc's
+			// whole AP reach every frame. The actual click still pathfinds with full AP, so a
+			// far-but-reachable target can still be ordered. Realtime only. INTERACT_HINT_AP_CAP
+			// is the reach we bother hinting for (~10 tiles) - raise it if hints feel too short.
+			const INT16 INTERACT_HINT_AP_CAP = 50;
+			extern INT16 gsInteractHintAPCap; extern INT16 gsUIPlotBranchBound;
+			const bool fHintRT = ( gTacticalStatus.uiFlags & REALTIME ) || !( gTacticalStatus.uiFlags & INCOMBAT );
+			const INT16 sHintCap = fHintRT ? ( pSoldier->bActionPoints < INTERACT_HINT_AP_CAP ? pSoldier->bActionPoints : INTERACT_HINT_AP_CAP ) : 0;
+
+			gsInteractHintAPCap = fHintRT ? INTERACT_HINT_AP_CAP : 0;
 			sActionGridNo =	FindAdjacentGridEx( pSoldier, sIntTileGridNo, &ubDirection, NULL, FALSE, TRUE );
-			if ( sActionGridNo == -1 )
+			gsInteractHintAPCap = 0;
+			// -1 means no reachable adjacent tile: the interactive tile is walled off from the
+			// merc. The old code fell back to plotting the interactive tile ITSELF, but that is a
+			// tile you can never stand on, so A* floods its whole reach every frame and never
+			// finds a path. Skip the plot entirely when unreachable - there is nothing to draw.
+			const bool fInteractReachable = ( sActionGridNo != -1 );
+			if ( !fInteractReachable )
 			{
 				sActionGridNo = sIntTileGridNo;
 			}
 			CalcInteractiveObjectAPs( pSoldier, sIntTileGridNo, pStructure, &sAPCost, &sBPCost ); // SANDRO - added argument
-			//sAPCost += UIPlotPath( pSoldier, sActionGridNo, NO_COPYROUTE, PLOT, TEMPORARY, (UINT16)pSoldier->usUIMovementMode, NOT_STEALTH, FORWARD, pSoldier->bActionPoints);
-			sAPCost += UIPlotPath( pSoldier, sActionGridNo, NO_COPYROUTE, fPlot, TEMPORARY, (UINT16)pSoldier->usUIMovementMode, NOT_STEALTH, FORWARD, pSoldier->bActionPoints);
+			if ( fInteractReachable )
+			{
+				gsUIPlotBranchBound = sHintCap;   // bound the plot; also caps a far-but-reachable approach
+				sAPCost += UIPlotPath( pSoldier, sActionGridNo, NO_COPYROUTE, fPlot, TEMPORARY, (UINT16)pSoldier->usUIMovementMode, NOT_STEALTH, FORWARD, pSoldier->bActionPoints);
+				gsUIPlotBranchBound = 0;
+			}
 
 			if ( sActionGridNo != pSoldier->sGridNo )
 			{
