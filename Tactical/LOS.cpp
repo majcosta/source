@@ -77,38 +77,6 @@ static FIXEDPT gqStandardWindowTopHeight = INT32_TO_FIXEDPT( WINDOW_TOP_HEIGHT_U
 OBJECTTYPE GLOCK_17_ForUseWithLOS;
 
 
-
-UINT32 FPMult32(UINT32 uiA, UINT32 uiB)
-{
-	UINT32 uiResult;
-
-	__asm {
-		// Load the 32-bit registers with the two values
-		mov		eax, uiA
-			mov		ebx, uiB
-
-			// Multiply them
-			// Top 32 bits (whole portion) goes into edx
-			// Bottom 32 bits (fractional portion) goes into eax
-			imul	ebx
-
-			// Shift the fractional portion back to (lower) 16 bits
-			shr		eax, 16
-			// Shift the whole portion to 16 bits, in the upper word
-			shl		edx, 16
-
-			// At this point, we have edx xxxx0000 and eax 0000xxxx
-			// Combine the two words into a dword
-			or		eax, edx
-
-			// Put the result into a returnable variable
-			mov		uiResult, eax
-	}
-
-	return(uiResult);
-}
-
-
 //zilpin: pellet spread patterns externalized in XML
 t_SpreadPattern  *gpSpreadPattern=NULL;
 INT32 giSpreadPatternCount=0;

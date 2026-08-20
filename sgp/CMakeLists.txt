@@ -22,6 +22,7 @@ set(sgpSrc
 "${CMAKE_CURRENT_SOURCE_DIR}/Random.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/sgp_logger.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/shading.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/shading_asm.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/soundman.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/STCI.cpp"
 "${CMAKE_CURRENT_SOURCE_DIR}/stringicmp.cpp"

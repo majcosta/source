@@ -97,11 +97,6 @@ void PerfManager::exitFunction()
 	_lastTime = getCPUCount();
 }
 
-__int64 PerfManager::getCPUCount () const
-{
-	_asm rdtsc
-}
-
 bool PerfSort::operator ()(const PerfDatum& lhs, const PerfDatum&rhs) const
 {
 	if(rhs._lineNumber == lhs._lineNumber)
@@ -314,11 +309,6 @@ void PerfManager::exitFunction()
 	//Lastly, update the function we've fallen back to with the new current
 	//run time.
 	_lastTime = getCPUCount();
-}
-
-__int64 PerfManager::getCPUCount () const
-{
-	_asm rdtsc
 }
 
 bool PerfSort::operator ()(const PerfDatum& lhs, const PerfDatum&rhs) const
