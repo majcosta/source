@@ -2067,6 +2067,29 @@ void HandleRPCDescriptionOfSector( INT16 sSectorX, INT16 sSectorY, INT16 sSector
 }
 
 
+// ponytail: symptom heal, not root fix (naive: forces the merc to map center).
+// A live, in-sector, non-vehicle/heli merc reaching an interactive sector still at NOWHERE means some
+// re-placement path dropped it after a sector transition. The root producer is unknown (rare, no repro),
+// so instead of the old fatal Assert we force the merc onto a known-good tile to keep the sector
+// consistent, and log it so the next crash report names the culprit merc.
+// Upgrade path: stop overloading sGridNo==NOWHERE to mean both "gone" and "not currently placed"
+// (add a placed-bit), find the leaking producer, then this heal and both guard loops can be deleted.
+static void EnsureInSectorMercPlaced( SOLDIERTYPE *pSoldier, INT32 iMercIndex )
+{
+	if ( !TileIsOutOfBounds( pSoldier->sGridNo ) )
+		return;
+
+	DebugMsg( TOPIC_JA2, DBG_LEVEL_0,
+		String( "SetCurrentWorldSector: merc %d (assignment %d) in-sector but unplaced at NOWHERE; healing to map center", iMercIndex, pSoldier->bAssignment ) );
+
+	// No valid fallback tile this load: leave the merc unplaced rather than crash.
+	if ( TileIsOutOfBounds( gMapInformation.sCenterGridNo ) )
+		return;
+
+	AddSoldierToSectorGridNo( pSoldier, gMapInformation.sCenterGridNo, pSoldier->ubDirection, FALSE, pSoldier->usAnimState, 0 );
+}
+
+
 BOOLEAN	SetCurrentWorldSector( INT16 sMapX, INT16 sMapY, INT8 bMapZ )
 {
 	BOOLEAN									fChangeMusic = TRUE;
@@ -2119,16 +2142,12 @@ BOOLEAN	SetCurrentWorldSector( INT16 sMapX, INT16 sMapY, INT8 bMapZ )
 
 		for ( int i = 0; i<TOTAL_SOLDIERS; ++i )
 		{
-			//CHRISL: We should only bother with this assertion if the soldier is alive.  Dead soliders are moved to
-			//	GridNo = NOWHERE, which causes this assertion to fail
-			//CHRISL: There's also an issue with vehicles.  Soldiers in any vehicle are considered to be in sGridNo = NOWHERE
-			//	This will result in an assertion error, so let's skip the assertion if the merc is assigned to a vehicle
 			SOLDIERTYPE *pSoldier = MercPtrs[i];
 
 			if (!(pSoldier->flags.uiStatusFlags & SOLDIER_DEAD) && pSoldier->bAssignment != VEHICLE && !SPY_LOCATION(pSoldier->bAssignment) && pSoldier->bAssignment != ASSIGNMENT_POW)
 			{
-				//Assert( !pSoldier->bActive || !pSoldier->bInSector || pSoldier->sGridNo != NOWHERE || pSoldier->bVehicleID == iHelicopterVehicleId );
-				Assert( !pSoldier->bActive || !pSoldier->bInSector || !TileIsOutOfBounds( pSoldier->sGridNo ) || pSoldier->bVehicleID == iHelicopterVehicleId );
+				if ( pSoldier->bActive && pSoldier->bInSector && pSoldier->bVehicleID != iHelicopterVehicleId )
+					EnsureInSectorMercPlaced( pSoldier, i );
 			}
 		}
 
@@ -2171,15 +2190,11 @@ BOOLEAN	SetCurrentWorldSector( INT16 sMapX, INT16 sMapY, INT8 bMapZ )
 
 		for ( int i = 0; i<TOTAL_SOLDIERS; i++ )
 		{
-			//CHRISL: We should only bother with this assertion if the soldier is alive.  Dead soliders are moved to
-			//	GridNo = NOWHERE, which causes this assertion to fail
-			//CHRISL: There's also an issue with vehicles.  Soldiers in any vehicle are considered to be in sGridNo = NOWHERE
-			//	This will result in an assertion error, so let's skip the assertion if the merc is assigned to a vehicle
 			SOLDIERTYPE *pSoldier = MercPtrs[i];
 			if (!(pSoldier->flags.uiStatusFlags & SOLDIER_DEAD) && pSoldier->bAssignment != VEHICLE && pSoldier->bAssignment != ASSIGNMENT_POW)
 			{
-				//Assert( !pSoldier->bActive || !pSoldier->bInSector || pSoldier->sGridNo != NOWHERE || pSoldier->bVehicleID == iHelicopterVehicleId );
-				Assert( !pSoldier->bActive || !pSoldier->bInSector || !TileIsOutOfBounds( pSoldier->sGridNo ) || pSoldier->bVehicleID == iHelicopterVehicleId );
+				if ( pSoldier->bActive && pSoldier->bInSector && pSoldier->bVehicleID != iHelicopterVehicleId )
+					EnsureInSectorMercPlaced( pSoldier, i );
 			}
 		}
 

@@ -36,6 +36,9 @@ BOOLEAN AddSoldierToSectorNoCalculateDirection( UINT16 ubID );
 
 BOOLEAN AddSoldierToSectorNoCalculateDirectionUseAnimation( UINT16 ubID, UINT16 usAnimState, UINT16 usAnimCode );
 
+// Inserts an already-created merc into the currently loaded sector at a specific gridno.
+void AddSoldierToSectorGridNo( SOLDIERTYPE *pSoldier, INT32 sGridNo, UINT8 ubDirection, BOOLEAN fUseAnimation, UINT16 usAnimState, UINT16 usAnimCode );
+
 // IsMercOnTeam() checks to see if the passed in Merc Profile ID is currently on the player's team
 BOOLEAN IsMercOnTeam( UINT8 ubMercID, BOOLEAN aAlreadyInCountry, BOOLEAN aAlive );
 
