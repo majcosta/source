@@ -1,87 +1,89 @@
-// node test.mjs — exercises the status-code contract the client depends on.
+// node test.mjs -- the report grammar and the views that read it, against the real
+// schema.sql in node's built-in SQLite. Nothing is wired up yet: no Worker, no D1.
+//
+// The property that matters most is the round trip: a row has to render back into
+// the exact bytes that were uploaded, because tools/symbolize_crash takes a file
+// and the upload is the only copy once the report is deleted from the player's
+// disk. id is the sha-256 of those bytes, so hashing report_text proves it.
 import assert from "node:assert";
-import worker from "./worker.js";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { DatabaseSync } from "node:sqlite";
+import { COLUMNS, INSERT, parseReport, reportId, toRow } from "./parse.js";
 
-const REPORT = `
-*** CRASH  code=C0000005  eip=0071D5A0  esp=202BF99C  ebp=202BFA18 ***
-  time 2026-07-26 10:41:02 UTC
-  build 6a941c06
-  handle @marco*evil
-  access violation: read from 00000002 [x](https://evil.test) \`
-  [0] 0071D5A0
-  [1] 006BE7DE
-`;
+// As the handler writes it, and as crash_telemetry.cpp uploads it: symbolized,
+// with an image stamp and inlined levels under the frame they were folded into.
+const SYMBOLIZED =
+	"\r\n*** CRASH  code=C0000005  eip=00C640A4  esp=202BF99C  ebp=202BFA18 ***\r\n" +
+	"  time 2026-09-20 09:46:30 UTC\r\n" +
+	"  build ddb691318\r\n" +
+	"  image 6AB220FF\r\n" +
+	"  handle o'marco\r\n" +
+	"  access violation: write to  2FD49008\r\n" +
+	"  modules (base size name):\r\n" +
+	"    004F0000 22E3C000 ja2.exe\r\n" +
+	"    77BA0000 001BF000 ntdll.dll\r\n" +
+	"  [0] 00C640A4 AutoResolveScreenHandle+0x2C  Auto Resolve.cpp:680\r\n" +
+	"      inlined RenderAutoResolve  Auto Resolve.cpp:1204\r\n" +
+	"      inlined ClipBlitToRect  vsurface.cpp:88\r\n" +
+	"  [1] 00C64100 GameLoop+0x1F1  gameloop.cpp:385\r\n" +
+	"  [2] 77BFE181\r\n";
 
-let sent = null;               // what we handed Discord on the last call
-let upstream = () => new Response(null, { status: 204 });
-globalThis.fetch = async (url, init) => { sent = init; return upstream(); };
+// What the Discord channel holds: no image line, no names. Still a report.
+// eip repeats frame 0, which is why the column does not exist; true of all 491.
+const BARE =
+	"\r\n*** CRASH  code=E1A55E27  eip=004031D5  esp=00000000  ebp=00000000 ***\r\n" +
+	"  time 2026-08-01 00:00:00 UTC\r\n" +
+	"  build c9100aace\r\n" +
+	"  assertion failed at line 412 of Soldier Control.cpp\r\n" +
+	"  message: it's bad\r\n" +
+	"  modules (base size name):\r\n" +
+	"    00400000 00A00000 ja2.exe\r\n" +
+	"  [0] 004031D5\r\n";
 
-let throttled = false;
-const ENV = {
-  DISCORD_WEBHOOK: "https://discord.test/hook",
-  UPLOAD_LIMITER: { limit: async () => ({ success: !throttled }) },
-};
+const p = parseReport(SYMBOLIZED);
+assert.deepEqual(p.unparsed, []);
+assert.equal(p.image, 0x6AB220FF);
+assert.deepEqual(p.frames[0], {
+	a: 0x00C640A4,
+	s: "AutoResolveScreenHandle+0x2C  Auto Resolve.cpp:680",
+	i: ["RenderAutoResolve  Auto Resolve.cpp:1204", "ClipBlitToRect  vsurface.cpp:88"],
+});
+assert.deepEqual(p.frames[2], { a: 0x77BFE181 });   // outside ja2.exe, never named
+assert.equal(parseReport(BARE).image, null);
 
-const post = (body, env = ENV) =>
-  worker.fetch(new Request("https://x/", { method: "POST", body }), env);
+// An inlined line with no frame above it is a line out of place, not a silent drop.
+assert.deepEqual(parseReport("      inlined Nowhere  x.cpp:1\r\n").unparsed,
+	["      inlined Nowhere  x.cpp:1"]);
 
-// happy path
-let r = await post(REPORT);
-assert.equal(r.status, 204);
-const content = JSON.parse(sent.body.get("payload_json")).content;
-assert.match(content, /C0000005/);
-assert.match(content, /read from 00000002/);
-assert.match(content, /build `6a941c06`/);
-assert.match(content, /marcoevil/);            // markdown and @ stripped from the handle
-// every field is attacker-chosen: no field may carry markup or a link into the
-// channel, and none may close the backticks or bold the summary wraps it in.
-assert.ok(!content.includes("]("), content);   // no link syntax out of the report
-assert.ok(!content.includes("://"), content);  // and no bare URL either
-assert.equal(content.match(/`/g).length, 4);   // only the two pairs summarize() opens
-assert.deepEqual(JSON.parse(sent.body.get("payload_json")).allowed_mentions, { parse: [] });
-assert.equal(await sent.body.get("files[0]").text(), REPORT);
+const db = new DatabaseSync(":memory:");
+db.exec(readFileSync("schema.sql", "utf8"));
+const one = (sql, ...v) => db.prepare(sql).get(...v);
 
-// an assertion report: same "*** CRASH" envelope, but the code is always the same
-// one, so the summary has to quote the assert's own line, file and message instead.
-const ASSERT_REPORT = `
-*** CRASH  code=E1A55E27  eip=7B00FA12  esp=0032F900  ebp=0032F950 ***
-  time 2026-07-31 16:54:06 UTC
-  build 6a941c06
-  assertion failed at line 412 of Soldier Control.cpp
-  message: bad **pMerc** [x](https://evil.test)
-  [0] 7B00FA12
-`;
-r = await post(ASSERT_REPORT);
-assert.equal(r.status, 204);
-const assertContent = JSON.parse(sent.body.get("payload_json")).content;
-assert.match(assertContent, /\*\*assert\*\* line 412 of Soldier Control.cpp/);
-assert.match(assertContent, /bad pMerc/);      // markdown stripped from the message
-assert.doesNotMatch(assertContent, /E1A55E27/); // the code itself tells nobody anything
-assert.ok(!assertContent.includes("]("), assertContent);
-assert.ok(!assertContent.includes("://"), assertContent);
-assert.equal(assertContent.match(/`/g).length, 2); // only the pair around the build
+const insert = db.prepare(INSERT);
+for (const text of [SYMBOLIZED, BARE]) insert.run(...toRow(text, await reportId(text), 1700000000));
 
-// junk: client should delete these, so they must be 400
-assert.equal((await post("hello")).status, 400);
-assert.equal((await post("x".repeat(32 * 1024 + 1))).status, 400);
+// The frame splits into function and source where the client put two spaces, and
+// `inlined` is the innermost level -- where the code actually was.
+const frames = db.prepare("SELECT idx, func, source, inlined, name FROM report_frames" +
+	" WHERE id = ? ORDER BY idx").all(await reportId(SYMBOLIZED));
+assert.deepEqual(frames, [
+	{ idx: 0, func: "AutoResolveScreenHandle+0x2C", source: "Auto Resolve.cpp:680",
+	  inlined: "ClipBlitToRect  vsurface.cpp:88", name: "ja2.exe" },
+	{ idx: 1, func: "GameLoop+0x1F1", source: "gameloop.cpp:385", inlined: null, name: "ja2.exe" },
+	{ idx: 2, func: null, source: null, inlined: null, name: "ntdll.dll" },
+]);
 
-// throttled: 429, and nothing reaches Discord. reportIsSettled() leaves 429
-// unsettled, so the client keeps the report for next launch.
-throttled = true;
-sent = null;
-assert.equal((await post(REPORT)).status, 429);
-assert.equal(sent, null);
-throttled = false;
 
-// our failures: client must keep the report, so these must be 5xx
-upstream = () => new Response(null, { status: 429 });          // Discord rate limit
-assert.equal((await post(REPORT)).status, 503);
-upstream = () => { throw new Error("network"); };
-assert.equal((await post(REPORT)).status, 503);
-upstream = () => new Response(null, { status: 204 });
-assert.equal((await post(REPORT, {})).status, 503);            // secret not set
+// The whole point: byte for byte, both shapes.
+for (const original of [SYMBOLIZED, BARE]) {
+	const id = await reportId(original);
+	const text = one("SELECT text FROM report_text WHERE id = ?", id).text;
+	assert.equal(text, original);
+	assert.equal(createHash("sha256").update(text, "utf8").digest("hex"), id);
+}
 
-// wrong method
-assert.equal((await worker.fetch(new Request("https://x/"), {})).status, 405);
+assert.equal(one("SELECT count(*) c FROM reports").c, 2);
+assert.equal(COLUMNS.length, 17);
 
 console.log("ok");
