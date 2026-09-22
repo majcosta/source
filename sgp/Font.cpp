@@ -844,6 +844,11 @@ UINT8				*pDestBuf;
 
 	// Lock the dest buffer
 	pDestBuf = LockVideoSurface( FontDestBuffer, &uiDestPitchBYTES );
+	// No surface to draw on: before the video manager is up, or after it is gone.
+	// The blitters below write through this pointer, so there is nothing useful to
+	// do here except not draw.
+	if (pDestBuf == NULL)
+		return(0);
 
 	while((*curletter)!=0)
 	{
@@ -950,6 +955,11 @@ UINT8				*pDestBuf;
 
 	// Lock the dest buffer
 	pDestBuf = LockVideoSurface( FontDestBuffer, &uiDestPitchBYTES );
+	// No surface to draw on: before the video manager is up, or after it is gone.
+	// The blitters below write through this pointer, so there is nothing useful to
+	// do here except not draw.
+	if (pDestBuf == NULL)
+		return(0);
 
 	while((*curletter)!=0)
 	{
@@ -1000,6 +1010,11 @@ UINT8				*pDestBuf;
 
 	// Lock the dest buffer
 	pDestBuf = LockVideoSurface( FontDestBuffer, &uiDestPitchBYTES );
+	// No surface to draw on: before the video manager is up, or after it is gone.
+	// The blitters below write through this pointer, so there is nothing useful to
+	// do here except not draw.
+	if (pDestBuf == NULL)
+		return(0);
 
 	while((*curletter)!=0)
 	{
@@ -1202,6 +1217,11 @@ UINT8				*pDestBuf;
 
 	// Lock the dest buffer
 	pDestBuf = LockVideoSurface( FontDestBuffer, &uiDestPitchBYTES );
+	// No surface to draw on: before the video manager is up, or after it is gone.
+	// The blitters below write through this pointer, so there is nothing useful to
+	// do here except not draw.
+	if (pDestBuf == NULL)
+		return(0);
 
 	while((*curletter)!=0)
 	{

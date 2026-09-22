@@ -2557,6 +2557,12 @@ LPDIRECTDRAWSURFACE2 GetMouseBufferObject(void)
 
 PTR LockPrimarySurface(UINT32 *uiPitch)
 {
+	// Before InitializeVideoManager, and after ShutdownVideoManager, this is
+	// NULL and locking it faults. Anything that draws on the way up or the way
+	// down -- an assertion, most of all -- has to be able to fail instead.
+	if (gpPrimarySurface == NULL)
+		return NULL;
+
 	HRESULT		ReturnCode;
 	DDSURFACEDESC SurfaceDescription;
 
@@ -2600,6 +2606,12 @@ void UnlockPrimarySurface(void)
 
 PTR LockBackBuffer(UINT32 *uiPitch)
 {
+	// Before InitializeVideoManager, and after ShutdownVideoManager, this is
+	// NULL and locking it faults. Anything that draws on the way up or the way
+	// down -- an assertion, most of all -- has to be able to fail instead.
+	if (gpBackBuffer == NULL)
+		return NULL;
+
 	HRESULT		ReturnCode;
 	DDSURFACEDESC SurfaceDescription;
 
@@ -2658,6 +2670,12 @@ void UnlockBackBuffer(void)
 
 PTR LockFrameBuffer(UINT32 *uiPitch)
 {
+	// Before InitializeVideoManager, and after ShutdownVideoManager, this is
+	// NULL and locking it faults. Anything that draws on the way up or the way
+	// down -- an assertion, most of all -- has to be able to fail instead.
+	if (gpFrameBuffer == NULL)
+		return NULL;
+
 	HRESULT		ReturnCode;
 	DDSURFACEDESC SurfaceDescription;
 
@@ -2704,6 +2722,12 @@ void UnlockFrameBuffer(void)
 
 PTR LockMouseBuffer(UINT32 *uiPitch)
 {
+	// Before InitializeVideoManager, and after ShutdownVideoManager, this is
+	// NULL and locking it faults. Anything that draws on the way up or the way
+	// down -- an assertion, most of all -- has to be able to fail instead.
+	if (gpMouseCursor == NULL)
+		return NULL;
+
 	HRESULT		ReturnCode;
 	DDSURFACEDESC SurfaceDescription;
 
