@@ -182,4 +182,11 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.application }}
-          path: build/*.exe
+          # The PDB ships beside the exe. sgp/crash_telemetry.cpp resolves a crash
+          # report's addresses against it on the player's machine before uploading,
+          # and without it there is nothing to resolve against: the report is a list
+          # of runtime addresses and the receiving end has no copy of this build.
+          # 81 MB raw, 13 MB once 7z has it.
+          path: |
+            build/*.exe
+            build/*.pdb

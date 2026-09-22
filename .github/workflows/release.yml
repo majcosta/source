@@ -81,6 +81,10 @@ jobs:
           for APP in ja2 ja2mapeditor ja2ub ja2ubmapeditor
           do
             mv artifacts/${APP}/${APP^^}.exe gamedir/${APP}.exe
+            # Named after the exe, in the same directory: that is where DbgHelp
+            # looks, and sgp/crash_telemetry.cpp will not upload a fault it cannot
+            # resolve. Shipping the exe without it turns crash reporting off.
+            mv artifacts/${APP}/${APP^^}.pdb gamedir/${APP}.pdb
           done
 
       - name: Create version information file
