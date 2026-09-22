@@ -141,7 +141,17 @@ jobs:
           # The build identity comes from versions.env, pinned once for the whole
           # workflow. Handing it over is what makes this a packaged build rather
           # than a local one; CMake never asks git who we are.
-          # Replaces CMake's default "/debug /INCREMENTAL" for this config.
+          # Release, not RelWithDebInfo. RelWithDebInfo means /Ob1 and /INCREMENTAL,
+          # both of which we then have to undo: it declines to inline anything not
+          # marked inline, so shipping it taxes every player for debug information
+          # we could have asked for directly. Release defaults to /Ob2 and
+          # /INCREMENTAL:NO, and the debug information is added rather than fought
+          # for -- /Z7 from CMAKE_MSVC_DEBUG_INFORMATION_FORMAT, /DEBUG here.
+          #
+          # Setting CMAKE_EXE_LINKER_FLAGS_RELEASE replaces the config's defaults
+          # instead of appending, so /INCREMENTAL:NO has to be restated: /DEBUG
+          # turns incremental linking back on by itself, and that alone costs 5 MB
+          # and puts 24% of .text back as 0xCC padding.
           #
           # /Brepro puts a hash of the image in the PE TimeDateStamp instead of the
           # wall clock. That field identifies the binary a crash report came from:
@@ -158,7 +168,7 @@ jobs:
           # Both belong here rather than in CMakeLists.txt: they are what a packaged
           # build is, and a local build wants incremental linking and stamps a report
           # nothing uploads.
-          cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=/debug /INCREMENTAL:NO /Brepro" -DApplications="$Env:JA2Application" -DGAME_BUILD_INFORMATION="$Env:GAME_BUILD_INFORMATION" -DGIT_SHA="$Env:GIT_SHA"
+          cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Release "-DCMAKE_EXE_LINKER_FLAGS_RELEASE=/INCREMENTAL:NO /DEBUG /Brepro" -DApplications="$Env:JA2Application" -DGAME_BUILD_INFORMATION="$Env:GAME_BUILD_INFORMATION" -DGIT_SHA="$Env:GIT_SHA"
       - name: Build
         run: |
           cmake --build build/ -- -v

@@ -50,9 +50,12 @@ set(usingMsBuild $<STREQUAL:${CMAKE_VS_PLATFORM_NAME},Win32>)
 # static runtime is forced on us until RakNet too is built from source. Debug
 # keeps its /MTd only when asan is off: asan needs the release CRT (see below).
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<AND:$<CONFIG:Debug>,$<NOT:${_asan}>>:Debug>")
-# make Debug builds /Z7 instead of /Zi so they can be sccache'd
+# /Z7 rather than /Zi wherever we emit debug information, so objects are
+# self-contained and sccache can cache them. Release is in the list because
+# Release is what we ship: the PDB beside the exe is the only thing that makes a
+# player's crash report readable, and it has to exist to be kept.
 set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT
-  "$<$<CONFIG:Debug,RelWithDebInfo>:Embedded>")
+  "$<$<CONFIG:Debug,RelWithDebInfo,Release>:Embedded>")
 
 add_compile_definitions(CINTERFACE XML_STATIC VFS_STATIC VFS_WITH_SLF VFS_WITH_7ZIP)
 include_directories(
