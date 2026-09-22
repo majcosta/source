@@ -70,6 +70,15 @@ const int kMaxSymbolChars = 120;
 
 DWORD64 s_symBase = 0; // preferred image base, once symInit() has succeeded
 
+// What the running image stamps into its own reports; see crash_report.cpp.
+// __ImageBase is linker-provided, so this asks the loader nothing.
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+DWORD ourImageStamp() {
+	const IMAGE_NT_HEADERS* nt = reinterpret_cast<const IMAGE_NT_HEADERS*>(
+		reinterpret_cast<const char*>(&__ImageBase) + __ImageBase.e_lfanew);
+	return nt->FileHeader.TimeDateStamp;
+}
+
 // Loads the PDB beside our own exe, once. Everything here is best-effort: no
 // symbols simply means reports go out exactly as they do today.
 bool symInit() {
@@ -153,13 +162,17 @@ std::string describeRva(DWORD64 rva) {
 bool symbolizeReport(std::vector<char>& body) {
 	const std::string text(body.begin(), body.end());
 
-	// The PDB beside us answers for one build only. Resolving another build's
+	// The PDB beside us answers for one binary only. Resolving another one's
 	// addresses against it yields names that are wrong and look right, which is
-	// worse than the addresses it replaced.
+	// worse than the addresses they replaced. The build id catches a report from
+	// another commit; the image stamp catches another build of the same commit,
+	// which is a different executable and the case that is easy to miss.
 	const char* buildId = sgp::crashBuildId();
 	if (buildId[0] == '\0') return false;
-	char wanted[80] = { 0 };
+	char wanted[96] = { 0 };
 	int n = snprintf(wanted, sizeof(wanted), "  build %s\r\n", buildId);
+	if (n < 0 || text.find(wanted) == std::string::npos) return false;
+	n = snprintf(wanted, sizeof(wanted), "  image %08lX\r\n", ourImageStamp());
 	if (n < 0 || text.find(wanted) == std::string::npos) return false;
 	if (!symInit()) return false;
 

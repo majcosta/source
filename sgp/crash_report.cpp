@@ -7,6 +7,9 @@
 
 #include <winternl.h> // PEB loader list, so the module table costs no allocation
 
+// Our own image's headers, without asking the loader for them.
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 
 
 
@@ -127,6 +130,17 @@ void writeExceptionBacktrace(_EXCEPTION_POINTERS* ep) {
 		t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond));
 	if (s_buildId[0])
 		emit(wsprintfA(line, "  build %s\r\n", s_buildId));
+	// The main image's TimeDateStamp, which is what actually identifies the
+	// binary: two builds of one commit are not the same executable, and a name
+	// resolved against the wrong one is wrong and looks right. The linker writes
+	// a content hash here under /Brepro and a timestamp otherwise; either way it
+	// is a fingerprint. __ImageBase is a linker-provided address, so reading it
+	// costs no call and no allocation.
+	{
+		const IMAGE_NT_HEADERS* nt = reinterpret_cast<const IMAGE_NT_HEADERS*>(
+			reinterpret_cast<const char*>(&__ImageBase) + __ImageBase.e_lfanew);
+		emit(wsprintfA(line, "  image %08lX\r\n", nt->FileHeader.TimeDateStamp));
+	}
 	if (s_userHandle[0])
 		emit(wsprintfA(line, "  handle %s\r\n", s_userHandle));
 	// File name only, and copied into a bounded buffer first: __FILE__ carries the

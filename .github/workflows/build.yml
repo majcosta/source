@@ -141,7 +141,24 @@ jobs:
           # The build identity comes from versions.env, pinned once for the whole
           # workflow. Handing it over is what makes this a packaged build rather
           # than a local one; CMake never asks git who we are.
-          cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DApplications="$Env:JA2Application" -DGAME_BUILD_INFORMATION="$Env:GAME_BUILD_INFORMATION" -DGIT_SHA="$Env:GIT_SHA"
+          # Replaces CMake's default "/debug /INCREMENTAL" for this config.
+          #
+          # /Brepro puts a hash of the image in the PE TimeDateStamp instead of the
+          # wall clock. That field identifies the binary a crash report came from:
+          # the report stamps it (sgp/crash_report.cpp) and the upload pass will not
+          # resolve addresses against a PDB unless it matches. A clock at one-second
+          # resolution can give two different binaries the same value; a hash cannot,
+          # and a false match there means names that are wrong and look right.
+          #
+          # Incremental linking is incompatible with it, and unwanted in anything we
+          # ship anyway: it pads every function so it can grow in place and forces
+          # /OPT:NOREF,NOICF, which left 22% of .text as 0xCC and kept dead code in
+          # the image. Dropping it takes .text from 0x9BDF7C to 0x7864F1.
+          #
+          # Both belong here rather than in CMakeLists.txt: they are what a packaged
+          # build is, and a local build wants incremental linking and stamps a report
+          # nothing uploads.
+          cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO=/debug /INCREMENTAL:NO /Brepro" -DApplications="$Env:JA2Application" -DGAME_BUILD_INFORMATION="$Env:GAME_BUILD_INFORMATION" -DGIT_SHA="$Env:GIT_SHA"
       - name: Build
         run: |
           cmake --build build/ -- -v
