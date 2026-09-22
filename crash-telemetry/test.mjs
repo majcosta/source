@@ -1,5 +1,7 @@
-// node test.mjs -- the report grammar and the views that read it, against the real
-// schema.sql in node's built-in SQLite. Nothing is wired up yet: no Worker, no D1.
+// node test.mjs -- the report grammar, the views that read it, and the status-code
+// contract the client depends on. No network, no wrangler, no D1: the fake binding
+// below is node:sqlite running the real schema.sql, so an insert that would fail
+// against D1 fails here too.
 //
 // The property that matters most is the round trip: a row has to render back into
 // the exact bytes that were uploaded, because tools/symbolize_crash takes a file
@@ -10,6 +12,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { COLUMNS, INSERT, parseReport, reportId, toRow } from "./parse.js";
+import worker from "./worker.js";
 
 // As the handler writes it, and as crash_telemetry.cpp uploads it: symbolized,
 // with an image stamp and inlined levels under the frame they were folded into.
@@ -60,8 +63,17 @@ const db = new DatabaseSync(":memory:");
 db.exec(readFileSync("schema.sql", "utf8"));
 const one = (sql, ...v) => db.prepare(sql).get(...v);
 
-const insert = db.prepare(INSERT);
-for (const text of [SYMBOLIZED, BARE]) insert.run(...toRow(text, await reportId(text), 1700000000));
+// The Worker's view of D1: prepare/bind/run over the real schema, so a statement
+// that would be rejected there is rejected here.
+let throttled = false;
+const ENV = {
+	DB: { prepare: (sql) => ({ bind: (...v) => ({ run: async () => db.prepare(sql).run(...v) }) }) },
+	UPLOAD_LIMITER: { limit: async () => ({ success: !throttled }) },
+};
+const post = (body, env = ENV) =>
+	worker.fetch(new Request("https://x/", { method: "POST", body }), env);
+
+for (const text of [SYMBOLIZED, BARE]) assert.equal((await post(text)).status, 204);
 
 // The frame splits into function and source where the client put two spaces, and
 // `inlined` is the innermost level -- where the code actually was.
@@ -83,7 +95,28 @@ for (const original of [SYMBOLIZED, BARE]) {
 	assert.equal(createHash("sha256").update(text, "utf8").digest("hex"), id);
 }
 
+// Same report twice is one row: postReport() reports a timeout as unsettled even
+// when we committed, so the client keeps the file and sends it again next launch.
+assert.equal((await post(SYMBOLIZED)).status, 204);
 assert.equal(one("SELECT count(*) c FROM reports").c, 2);
 assert.equal(COLUMNS.length, 17);
+
+// ---- the status-code contract ---------------------------------------------
+
+// Junk: the client deletes these, so they must be 400.
+assert.equal((await post("hello")).status, 400);
+assert.equal((await post("x".repeat(32 * 1024 + 1))).status, 400);
+assert.equal((await worker.fetch(new Request("https://x/"), ENV)).status, 405);
+
+// Throttled: 429, and nothing is stored. reportIsSettled() leaves 429 unsettled,
+// so the client keeps the report for next launch.
+throttled = true;
+assert.equal((await post(BARE)).status, 429);
+throttled = false;
+
+// Our failures must be 5xx, or the client throws away a report we never stored.
+const broken = { ...ENV, DB: { prepare: () => { throw new Error("D1_ERROR"); } } };
+assert.equal((await post(SYMBOLIZED, broken)).status, 503);
+assert.equal((await post(SYMBOLIZED, { ...ENV, DB: null })).status, 503);
 
 console.log("ok");

@@ -1,5 +1,9 @@
-# Holds a live Discord webhook URL. Never commit it.
+# Would hold a credential for `wrangler dev`. The Worker has no secrets today,
+# but keep it out of the tree if one ever appears.
 .dev.vars
+
+# What import-discord.mjs writes: other people's crash reports, and regenerable.
+import-*.sql
 
 # Regenerable local state: build cache, miniflare storage, account cache.
 .wrangler/
