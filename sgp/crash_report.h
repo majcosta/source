@@ -33,6 +33,11 @@ namespace sgp
 	// a report can be matched to the exact build's PDB. Call once at startup.
 	void setCrashBuildId(const char* id);
 
+	// What setCrashBuildId() stamped, empty if it was never called. Read by the
+	// telemetry pass: a report's `build` line has to equal this before its
+	// addresses may be resolved against the PDB sitting beside us.
+	const char* crashBuildId();
+
 	// What to tell the player: why we died and where the report landed. NULL if
 	// no crash was recorded. Built by the handler, shown from the exit path.
 	const wchar_t* crashReportMessage();

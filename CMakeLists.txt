@@ -261,7 +261,9 @@ foreach(app IN LISTS ApplicationTargets)
   target_link_libraries(${app}_Utils PRIVATE smacker)
 
   # for SGP only
-  target_link_libraries(${app}_sgp PRIVATE "ddraw.lib" "${PROJECT_SOURCE_DIR}/fmodvc.lib")
+  # dbghelp: crash_telemetry.cpp resolves a report's addresses against the PDB
+  # beside the exe before uploading it. Not the crash handler -- see that file.
+  target_link_libraries(${app}_sgp PRIVATE "ddraw.lib" "dbghelp.lib" "${PROJECT_SOURCE_DIR}/fmodvc.lib")
   target_link_libraries(${app}_sgp PRIVATE libpng)
   target_compile_definitions(${app}_sgp PRIVATE ${compilationFlags} ${debugFlags} NO_ZLIB_COMPRESSION)
 endforeach()

@@ -1,5 +1,10 @@
-// Crash telemetry: upload the crash_report_*.txt files the crash handler left
-// behind, on the next launch.
+// Crash telemetry: symbolize the crash_report_*.txt files the crash handler left
+// behind and upload them, on the next launch.
+//
+// Nothing the receiving end cannot read is sent. A fault is a list of addresses
+// and means nothing without the PDB that explains them, which is not something
+// the other end can be assumed to still have, so a fault goes out only once its
+// frames have names. An assertion already says what it is and goes out either way.
 //
 // Deliberately a separate translation unit from crash_report.cpp. Everything in
 // there runs inside a faulting thread and may not allocate; everything here runs at
@@ -12,9 +17,12 @@
 
 #include <windows.h>
 #include <winhttp.h>
+#include <dbghelp.h>
 #include <process.h> // _beginthreadex for the detached upload thread
 
+#include <cstdio>  // snprintf, sscanf_s
 #include <cstring> // strstr
+#include <string>
 #include <vector>
 
 namespace {
@@ -43,6 +51,175 @@ void writeConsent(bool yes) {
 // what the sink will not take is how an upload destroys the report it carries.
 const DWORD kMaxReportBytes = 32 * 1024;
 
+// --- symbolization ---------------------------------------------------------
+//
+// Names go on here rather than in the handler. SymInitialize parses the whole PDB:
+// it allocates megabytes and takes the loader lock, and crash_report.cpp runs
+// inside a faulting thread where neither is allowed. By the time this file runs
+// the process is healthy and this is an ordinary background thread, so the report
+// can have its names filled in on the way out instead of never.
+//
+// Addresses in a report are runtime VAs from a /DYNAMICBASE image, so they mean
+// nothing without the base the report recorded. Rather than reload the PDB at each
+// report's base, the image is loaded once at its preferred base and every address
+// is turned into an RVA first: the same arithmetic, one PDB parse per launch.
+
+// Names are already undecorated; a template one can still run to thousands of
+// characters, and the sink answers a settling 400 above 32 KB.
+const int kMaxSymbolChars = 120;
+
+DWORD64 s_symBase = 0; // preferred image base, once symInit() has succeeded
+
+// Loads the PDB beside our own exe, once. Everything here is best-effort: no
+// symbols simply means reports go out exactly as they do today.
+bool symInit() {
+	static int state = 0; // 0 = untried, 1 = ready, -1 = nothing to load
+	if (state != 0) return state > 0;
+	state = -1;
+
+	char exePath[MAX_PATH] = { 0 };
+	if (!GetModuleFileNameA(NULL, exePath, ARRAYSIZE(exePath))) return false;
+
+	char* slash = strrchr(exePath, '\\');
+	char* dot = strrchr(slash != NULL ? slash : exePath, '.');
+	if (dot == NULL) return false;
+
+	// Without a PDB beside the exe DbgHelp still "succeeds" and answers with
+	// export names, which are worse than raw addresses because they look
+	// authoritative. Check for the file rather than pay the load to find out.
+	char pdbPath[MAX_PATH] = { 0 };
+	lstrcpynA(pdbPath, exePath, ARRAYSIZE(pdbPath));
+	lstrcpynA(pdbPath + (dot - exePath), ".pdb", 5);
+	if (GetFileAttributesA(pdbPath) == INVALID_FILE_ATTRIBUTES) return false;
+
+	char dir[MAX_PATH] = { 0 };
+	lstrcpynA(dir, exePath, ARRAYSIZE(dir));
+	if (slash != NULL) dir[slash - exePath] = '\0';
+
+	SymSetOptions(SYMOPT_LOAD_LINES | SYMOPT_UNDNAME | SYMOPT_NO_PROMPTS);
+	// FALSE: do not enumerate this process's own modules. Exactly one image is
+	// registered, at its preferred base, and nothing else is ever asked about.
+	if (!SymInitialize(GetCurrentProcess(), dir, FALSE)) return false;
+	// A base of zero tells DbgHelp to use the image's own preferred base and hand
+	// it back, which is the base every RVA below is added to.
+	s_symBase = SymLoadModuleEx(GetCurrentProcess(), NULL, exePath, NULL, 0, 0, NULL, 0);
+	if (s_symBase == 0) {
+		SymCleanup(GetCurrentProcess());
+		return false;
+	}
+	state = 1;
+	return true;
+}
+
+// "name+0x1A  file.cpp:123" for an offset into the main image, empty if it
+// resolves to nothing -- a frame-pointer walk picks up addresses that are not
+// return addresses at all, and those have no name to find.
+std::string describeRva(DWORD64 rva) {
+	HANDLE process = GetCurrentProcess();
+	// DbgHelp writes the name into the tail of the structure, hence the buffer.
+	char storage[sizeof(SYMBOL_INFO) + MAX_SYM_NAME] = { 0 };
+	SYMBOL_INFO* symbol = reinterpret_cast<SYMBOL_INFO*>(storage);
+	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+	symbol->MaxNameLen = MAX_SYM_NAME;
+
+	DWORD64 offset = 0;
+	if (!SymFromAddr(process, s_symBase + rva, &offset, symbol)) return std::string();
+
+	char text[320] = { 0 };
+	int n = snprintf(text, sizeof(text), "%.*s+0x%lX",
+		kMaxSymbolChars, symbol->Name, static_cast<unsigned long>(offset));
+	if (n < 0) return std::string();
+	std::string out(text, n);
+
+	DWORD displacement = 0;
+	IMAGEHLP_LINE64 line = { sizeof(IMAGEHLP_LINE64) };
+	if (SymGetLineFromAddr64(process, s_symBase + rva, &displacement, &line) &&
+			line.FileName != NULL) {
+		// File name only, like the module table and the assertion line already do.
+		// The directory here is the build machine's, not the player's, but it is
+		// noise either way and the report has 32 KB to live in.
+		const char* file = line.FileName;
+		for (const char* p = line.FileName; *p != '\0'; ++p)
+			if (*p == '\\' || *p == '/') file = p + 1;
+		n = snprintf(text, sizeof(text), "  %.80s:%lu", file, line.LineNumber);
+		if (n > 0) out.append(text, n);
+	}
+	return out;
+}
+
+// Appends a name to every frame line that resolves, in place. Leaves body alone
+// and returns false when there is nothing to add -- no PDB, a report from another
+// build, or a stack the walk could not make sense of.
+bool symbolizeReport(std::vector<char>& body) {
+	const std::string text(body.begin(), body.end());
+
+	// The PDB beside us answers for one build only. Resolving another build's
+	// addresses against it yields names that are wrong and look right, which is
+	// worse than the addresses it replaced.
+	const char* buildId = sgp::crashBuildId();
+	if (buildId[0] == '\0') return false;
+	char wanted[80] = { 0 };
+	int n = snprintf(wanted, sizeof(wanted), "  build %s\r\n", buildId);
+	if (n < 0 || text.find(wanted) == std::string::npos) return false;
+	if (!symInit()) return false;
+
+	DWORD64 imageBase = 0, imageSize = 0;
+	std::string out;
+	out.reserve(text.size() + 2048);
+	int named = 0;
+
+	for (size_t at = 0; at < text.size();) {
+		size_t stop = text.find('\n', at);
+		const size_t next = (stop == std::string::npos) ? text.size() : stop + 1;
+		if (stop == std::string::npos) stop = text.size();
+		// The line without its terminator, so anything appended lands before it.
+		while (stop > at && (text[stop - 1] == '\r' || text[stop - 1] == '\n')) --stop;
+		const std::string line = text.substr(at, stop - at);
+
+		out.append(line);
+		unsigned base = 0, size = 0, index = 0, addr = 0;
+		if (imageBase == 0 && line.compare(0, 4, "    ") == 0 &&
+				sscanf_s(line.c_str(), "    %8x %8x", &base, &size) == 2) {
+			// The loader lists the main image first, and it is the only one this
+			// PDB can speak for; the rest are named by the module table already.
+			imageBase = base;
+			imageSize = size;
+		} else if (imageBase != 0 && sscanf_s(line.c_str(), "  [%u] %8x", &index, &addr) == 2 &&
+				addr >= imageBase && addr < imageBase + imageSize) {
+			const std::string described = describeRva(addr - imageBase);
+			if (!described.empty()) {
+				out.append(" ").append(described);
+				++named;
+			}
+		}
+		out.append(text, stop, next - stop);
+		at = next;
+	}
+
+	// Over the cap the sink answers a settling 400 and the client deletes the
+	// file: an upload that grew too large destroys the report it was carrying.
+	if (named == 0 || out.size() > kMaxReportBytes) return false;
+	body.assign(out.begin(), out.end());
+	return true;
+}
+
+// The two kinds of report the handler writes are readable for different reasons.
+// A fault is nothing but addresses: strip the names and there is no content left,
+// which is how 281 rows of `code|module+offset` ended up in the database against
+// builds whose PDBs nobody kept. An assertion states its own file, line and
+// message, so it is readable on its own terms -- the frames under it are the path
+// that reached it, worth having and not what makes it worth sending.
+bool reportIsAssertion(const std::string& text) {
+	return text.find("\r\n  assertion failed at line ") != std::string::npos;
+}
+
+// Names on what can carry them, and a verdict on whether to send at all.
+bool prepareUpload(std::vector<char>& body) {
+	const std::string text(body.begin(), body.end());
+	const bool named = symbolizeReport(body);
+	return named || reportIsAssertion(text);
+}
+
 // POST one report file to url. Returns the HTTP status, or 0 if the request never
 // completed (no connection, DNS failure, timeout) — see reportIsSettled().
 DWORD postReport(const wchar_t* url, const char* path) {
@@ -56,6 +233,16 @@ DWORD postReport(const wchar_t* url, const char* path) {
 	BOOL read_ok = ReadFile(fh, body.data(), size, &got, NULL);
 	CloseHandle(fh);
 	if (!read_ok || got != size) return 0;
+
+	// Nothing unreadable goes on the wire. Zero is "never completed", so
+	// reportIsSettled() keeps the file and the next launch tries again -- which is
+	// what we want if the PDB turns up beside the exe later. A report that stays
+	// unreadable is taken unsent by the existing age reaper.
+	//
+	// The file on disk is left as the handler wrote it either way: it is the
+	// record, and symbolize_crash has to keep reading it.
+	if (!prepareUpload(body)) return 0;
+	size = static_cast<DWORD>(body.size());
 
 	URL_COMPONENTS uc = {}; uc.dwStructSize = sizeof(uc);
 	wchar_t host[256] = {}, urlpath[1024] = {};

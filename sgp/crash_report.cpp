@@ -26,6 +26,7 @@ static char s_buildId[64] = { 0 };
 void setCrashBuildId(const char* id) {
 	if (id) lstrcpynA(s_buildId, id, sizeof(s_buildId));
 }
+const char* crashBuildId() { return s_buildId; }
 
 // Filled in once a report has been written; see crashReportMessage(). Sized to
 // wsprintf's own output limit: it bounds nothing itself, and what goes in here is
