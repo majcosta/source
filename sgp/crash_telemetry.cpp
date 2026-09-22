@@ -68,6 +68,10 @@ const DWORD kMaxReportBytes = 32 * 1024;
 // characters, and the sink answers a settling 400 above 32 KB.
 const int kMaxSymbolChars = 120;
 
+// A pathological inline chain should not push a report over the sink's cap on its
+// own; past this depth the innermost frames are the ones worth having anyway.
+const DWORD kMaxInlineFrames = 8;
+
 DWORD64 s_symBase = 0; // preferred image base, once symInit() has succeeded
 
 // What the running image stamps into its own reports; see crash_report.cpp.
@@ -120,40 +124,72 @@ bool symInit() {
 	return true;
 }
 
-// "name+0x1A  file.cpp:123" for an offset into the main image, empty if it
-// resolves to nothing -- a frame-pointer walk picks up addresses that are not
-// return addresses at all, and those have no name to find.
-std::string describeRva(DWORD64 rva) {
-	HANDLE process = GetCurrentProcess();
-	// DbgHelp writes the name into the tail of the structure, hence the buffer.
-	char storage[sizeof(SYMBOL_INFO) + MAX_SYM_NAME] = { 0 };
-	SYMBOL_INFO* symbol = reinterpret_cast<SYMBOL_INFO*>(storage);
-	symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
-	symbol->MaxNameLen = MAX_SYM_NAME;
-
-	DWORD64 offset = 0;
-	if (!SymFromAddr(process, s_symBase + rva, &offset, symbol)) return std::string();
-
+// One location as the report writes it: "name+0x1A  file.cpp:123".
+std::string formatLocation(const char* name, DWORD64 offset, const IMAGEHLP_LINE64* line) {
 	char text[320] = { 0 };
 	int n = snprintf(text, sizeof(text), "%.*s+0x%lX",
-		kMaxSymbolChars, symbol->Name, static_cast<unsigned long>(offset));
+		kMaxSymbolChars, name, static_cast<unsigned long>(offset));
 	if (n < 0) return std::string();
 	std::string out(text, n);
-
-	DWORD displacement = 0;
-	IMAGEHLP_LINE64 line = { sizeof(IMAGEHLP_LINE64) };
-	if (SymGetLineFromAddr64(process, s_symBase + rva, &displacement, &line) &&
-			line.FileName != NULL) {
+	if (line != NULL && line->FileName != NULL) {
 		// File name only, like the module table and the assertion line already do.
-		// The directory here is the build machine's, not the player's, but it is
-		// noise either way and the report has 32 KB to live in.
-		const char* file = line.FileName;
-		for (const char* p = line.FileName; *p != '\0'; ++p)
+		// The directory is the build machine's, which is noise once it leaves here.
+		const char* file = line->FileName;
+		for (const char* p = line->FileName; *p != '\0'; ++p)
 			if (*p == '\\' || *p == '/') file = p + 1;
-		n = snprintf(text, sizeof(text), "  %.80s:%lu", file, line.LineNumber);
+		n = snprintf(text, sizeof(text), "  %.80s:%lu", file, line->LineNumber);
 		if (n > 0) out.append(text, n);
 	}
 	return out;
+}
+
+// Where an address really is: the function that owns it, then everything the
+// optimizer inlined into it, innermost last. Release builds inline freely, so
+// without this a frame reports whichever function swallowed the code -- and the
+// grouping key downstream would be built from that same wrong name. This is the
+// walk symbolize_crash.cpp does; the reasoning there applies unchanged.
+//
+// Empty when nothing resolves: a frame-pointer walk picks up values that are not
+// return addresses, and those have no name to find.
+std::vector<std::string> describeRva(DWORD64 rva) {
+	std::vector<std::string> located;
+	HANDLE process = GetCurrentProcess();
+	const DWORD64 address = s_symBase + rva;
+
+	// DbgHelp writes the name into the tail of the structure, hence the buffer.
+	char storage[sizeof(SYMBOL_INFO) + MAX_SYM_NAME] = { 0 };
+	SYMBOL_INFO* symbol = reinterpret_cast<SYMBOL_INFO*>(storage);
+	const auto reset = [&] {
+		symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
+		symbol->MaxNameLen = MAX_SYM_NAME;
+	};
+
+	DWORD64 offset = 0;
+	DWORD displacement = 0;
+	IMAGEHLP_LINE64 line = { sizeof(IMAGEHLP_LINE64) };
+
+	reset();
+	if (!SymFromAddr(process, address, &offset, symbol)) return located;
+	const bool haveLine = SymGetLineFromAddr64(process, address, &displacement, &line) != FALSE;
+	located.push_back(formatLocation(symbol->Name, offset, haveLine ? &line : NULL));
+
+	// Inline contexts run innermost first, so walk them backwards to keep the
+	// caller-to-callee order the rest of the report reads in.
+	const DWORD inlined = SymAddrIncludeInlineTrace(process, address);
+	DWORD context = 0, frameIndex = 0;
+	if (inlined == 0 || inlined > kMaxInlineFrames ||
+			!SymQueryInlineTrace(process, address, 0, address, address, &context, &frameIndex))
+		return located;
+
+	for (DWORD i = inlined; i-- > 0;) {
+		reset();
+		if (!SymFromInlineContext(process, address, context + i, &offset, symbol)) continue;
+		line = { sizeof(IMAGEHLP_LINE64) };
+		const bool ok = SymGetLineFromInlineContext(process, address, context + i, 0,
+			&displacement, &line) != FALSE;
+		located.push_back(formatLocation(symbol->Name, offset, ok ? &line : NULL));
+	}
+	return located;
 }
 
 // Appends a name to every frame line that resolves, in place. Leaves body alone
@@ -199,9 +235,15 @@ bool symbolizeReport(std::vector<char>& body) {
 			imageSize = size;
 		} else if (imageBase != 0 && sscanf_s(line.c_str(), "  [%u] %8x", &index, &addr) == 2 &&
 				addr >= imageBase && addr < imageBase + imageSize) {
-			const std::string described = describeRva(addr - imageBase);
-			if (!described.empty()) {
-				out.append(" ").append(described);
+			const std::vector<std::string> located = describeRva(addr - imageBase);
+			if (!located.empty()) {
+				out.append(" ").append(located[0]);
+				// Inlined code gets its own lines under the frame, at six spaces:
+				// two is a frame, four is a module, and one line per location keeps
+				// the frame numbering positional the way the reader expects.
+				const std::string eol = (next > stop) ? text.substr(stop, next - stop) : "\r\n";
+				for (size_t k = 1; k < located.size(); ++k)
+					out.append(eol).append("      inlined ").append(located[k]);
 				++named;
 			}
 		}
