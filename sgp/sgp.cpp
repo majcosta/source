@@ -1237,7 +1237,7 @@ void GetRuntimeSettings( )
 	// WANNE: Should we play the intro?
 	iPlayIntro = (int)oProps.getIntProperty("Ja2 Settings","PLAY_INTRO", iPlayIntro);
 
-    iUseWinFonts= (int)oProps.getIntProperty("Ja2 Settings","USE_WINFONTS", iUseWinFonts);
+    iUseWinFonts= (int)oProps.getIntProperty("Ja2 Settings","USE_WINFONTS", g_lang == i18n::Lang::zh);
 	fTooltipScaleFactor = ((float)oProps.getFloatProperty("Ja2 Settings", "TOOLTIP_SCALE_FACTOR", 100)) / 100;
 	if (fTooltipScaleFactor < 1) fTooltipScaleFactor = 1;
 
