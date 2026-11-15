@@ -97,8 +97,8 @@ jobs:
       SCCACHE_GHA_ENABLED: 'true'
 
     steps:
-      # the game data in gamedir/ and gamedir-languages/ is not needed to
-      # compile and would add gigabytes to the checkout
+      # the game data in gamedir/ is not needed to compile and would add
+      # gigabytes to the checkout
       - name: Checkout source
         uses: actions/checkout@v7
         with:
@@ -106,7 +106,6 @@ jobs:
           sparse-checkout: |
             /*
             !gamedir/
-            !gamedir-languages/
           sparse-checkout-cone-mode: false
 
       - name: Download versions.env

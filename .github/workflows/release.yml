@@ -22,7 +22,7 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
 
-  # only the game data differs per language, every package gets the same executables
+  # one package holds every language, each chosen by its own vfs_config
   assemble:
     needs: build
     # a manual run only assembles when asked for it. Otherwise every tag does,
@@ -34,12 +34,6 @@ jobs:
              && ( ( github.repository == '1dot13/source' && github.ref_name == 'master' )
                   || startsWith(github.ref, 'refs/tags/v') ) }}
     runs-on: ubuntu-latest
-    # at least English has to work
-    continue-on-error: ${{ matrix.language != 'English' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        language: [Chinese, German, English, French, Polish, Italian, Dutch, Russian]
 
     steps:
       - name: Download versions.env
@@ -52,21 +46,13 @@ jobs:
         run: cat artifacts/versions.env >> $GITHUB_ENV
 
       # blob:none plus a sparse checkout fetches only the game data, not the
-      # engine source; both directories come from the same pinned commit
-      - name: Checkout gamedir and gamedir-languages
+      # engine source
+      - name: Checkout gamedir
         uses: actions/checkout@v7
         with:
           filter: 'blob:none'
           sparse-checkout: |
             gamedir
-            gamedir-languages
-
-      - name: Copy gamedir-languages files to gamedir
-        if: matrix.language != 'English'
-        shell: bash
-        run: |
-          set -eux
-          cp -a gamedir-languages/${{ matrix.language }}_Version/* gamedir/
 
       - name: Download applications
         uses: actions/download-artifact@v8
@@ -91,13 +77,12 @@ jobs:
 
           # "-" separates words, "_" combines words, see double-click behavior
           DIST_PREFIX='JA2_113'
-          DIST_NAME="${DIST_PREFIX}-${GAME_VERSION}-${{ matrix.language }}"
+          DIST_NAME="${DIST_PREFIX}-${GAME_VERSION}"
           echo "DIST_NAME=$DIST_NAME" >> $GITHUB_ENV
 
           echo "If you encounter problems during gameplay, please provide the following version information:
           Distribution Name: $DIST_NAME
           Game Version: $GAME_VERSION
-          Language: ${{ matrix.language }}
           Build Information: $GAME_BUILD_INFORMATION
           Source Repository: $GITHUB_REPOSITORY
           Source Commit SHA: $GITHUB_SHA
@@ -116,7 +101,7 @@ jobs:
       - name: Upload
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.language }}_release
+          name: release
           path: dist/
           compression-level: 0
 
@@ -129,9 +114,8 @@ jobs:
     - name: Download artifacts
       uses: actions/download-artifact@v8
       with:
+        name: release
         path: dist
-        pattern: '*_release'
-        merge-multiple: true
 
     - name: Checkout Repo
       uses: actions/checkout@v7
