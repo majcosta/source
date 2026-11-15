@@ -972,25 +972,6 @@ void GetRuntimeSettings( )
 		SGP_THROW_IFFALSE( setlocale(LC_ALL, loc.utf8().c_str()), _BS(L"invalid locale : ") << loc << _BS::wget );
 	}
 
-	vfs::PropertyContainer langProps;
-	langProps.initFromIniFile(std::string{LANGUAGE_INI_FILE});
-	auto langIni = langProps.getStringProperty("Language", L"LANGUAGE");
-	auto langCli = oProps.getStringProperty("Ja2 Settings", L"LANGUAGE");
-	std::string language{};
-	if(!langCli.empty())
-	{
-		language = langCli.utf8();
-	}
-        if (!langIni.empty()) {
-          language = langIni.utf8();
-        }
-        SetLanguageFromName(language);
-
-	// Rebind every language table pointer to the resolved g_lang. Unconditional:
-	// with no LANGUAGE key this binds the build default, matching the static
-	// lang_default initialization the pointers start with.
-	BindLanguageStrings(g_lang);
-
 	iResolution = (int)oProps.getIntProperty(L"Ja2 Settings", L"SCREEN_RESOLUTION", -1);
 	
 	// WANNE: Always enable
@@ -1026,6 +1007,19 @@ void GetRuntimeSettings( )
 	{
 		vfs_config_ini.push_back(L"vfs_config.ini");
 	}
+
+	vfs::PropertyContainer vfsConfigProps;
+	for(vfs::Path const& ini : vfs_config_ini)
+	{
+		vfsConfigProps.initFromIniFile(ini);
+	}
+	SetLanguageFromName(vfsConfigProps.getStringProperty(L"vfs_config", L"LANGUAGE").utf8());
+
+	// Rebind every language table pointer to the resolved g_lang. Unconditional:
+	// with no LANGUAGE key this binds the build default, matching the static
+	// lang_default initialization the pointers start with.
+	BindLanguageStrings(g_lang);
+
 	std::list<vfs::String> merge_list;
 	if(oProps.getStringListProperty(L"Ja2 Settings", L"MERGE_INI_FILES", merge_list, L""))
 	{
